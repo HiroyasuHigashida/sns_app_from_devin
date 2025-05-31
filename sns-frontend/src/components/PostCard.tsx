@@ -1,0 +1,129 @@
+import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { api } from '../services/api'
+import { Button } from './ui/button'
+import { Card, CardContent } from './ui/card'
+import { Heart, Trash2 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+
+interface Post {
+  id: string
+  user_id: string
+  username: string
+  name: string
+  content: string
+  created_at: string
+  likes_count: number
+  liked_by_user: boolean
+}
+
+interface PostCardProps {
+  post: Post
+  onDeleted: (postId: string) => void
+  onLiked: (postId: string, liked: boolean, newLikesCount: number) => void
+}
+
+export default function PostCard({ post, onDeleted, onLiked }: PostCardProps) {
+  const [loading, setLoading] = useState(false)
+  const { token, user } = useAuth()
+
+  const handleLike = async () => {
+    if (!token || loading) return
+
+    setLoading(true)
+    try {
+      if (post.liked_by_user) {
+        await api.unlikePost(token, post.id)
+        onLiked(post.id, false, post.likes_count - 1)
+      } else {
+        await api.likePost(token, post.id)
+        onLiked(post.id, true, post.likes_count + 1)
+      }
+    } catch (error) {
+      console.error('Failed to toggle like:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!token || loading) return
+    if (!confirm('Are you sure you want to delete this post?')) return
+
+    setLoading(true)
+    try {
+      await api.deletePost(token, post.id)
+      onDeleted(post.id)
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+    } catch {
+      return 'Unknown time'
+    }
+  }
+
+  const isOwnPost = user?.id === post.user_id
+
+  return (
+    <Card className="hover:bg-gray-50 transition-colors">
+      <CardContent className="p-4">
+        <div className="flex space-x-3">
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+            {post.name.charAt(0).toUpperCase()}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-gray-900">{post.name}</span>
+              <span className="text-gray-500">@{post.username}</span>
+              <span className="text-gray-500">·</span>
+              <span className="text-gray-500 text-sm">{formatDate(post.created_at)}</span>
+              
+              {isOwnPost && (
+                <div className="ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="text-gray-500 hover:text-red-500 p-1"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-2">
+              <p className="text-gray-900 whitespace-pre-wrap break-words">{post.content}</p>
+            </div>
+            
+            <div className="mt-3 flex items-center space-x-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLike}
+                disabled={loading}
+                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-red-50 ${
+                  post.liked_by_user ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                }`}
+              >
+                <Heart 
+                  className={`h-4 w-4 ${post.liked_by_user ? 'fill-current' : ''}`} 
+                />
+                <span className="text-sm">{post.likes_count}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
