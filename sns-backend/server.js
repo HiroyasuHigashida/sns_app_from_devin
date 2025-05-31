@@ -12,7 +12,9 @@ const JWT_SECRET = process.env.JWT_SECRET || (() => {
 })();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.text({ type: 'text/plain' }));
 
 const users = [];
 const posts = [];
@@ -87,6 +89,7 @@ app.post('/auth/register', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ detail: 'Internal server error' });
   }
 });
@@ -123,6 +126,7 @@ app.post('/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ detail: 'Internal server error' });
   }
 });
@@ -216,30 +220,54 @@ app.get('/users/search', authenticateToken, (req, res) => {
 });
 
 app.post('/posts', authenticateToken, (req, res) => {
-  const { content } = req.body;
-  
-  if (!content || content.trim().length === 0) {
-    return res.status(400).json({ detail: 'Content is required' });
+  try {
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
+    if (!req.body) {
+      return res.status(400).json({ detail: 'Request body is missing' });
+    }
+    
+    let parsedBody;
+    try {
+      parsedBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } catch (error) {
+      return res.status(400).json({ detail: 'Invalid JSON in request body' });
+    }
+    
+    const { content } = parsedBody;
+    
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({ detail: 'Content is required' });
+    }
+
+    if (content.length > 280) {
+      return res.status(400).json({ detail: 'Content must be 280 characters or less' });
+    }
+
+    const user = findUserById(req.user.user_id);
+    if (!user) {
+      return res.status(404).json({ detail: 'User not found' });
+    }
+
+    const post = {
+      id: uuidv4(),
+      user_id: user.id,
+      username: user.username,
+      name: user.name,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      likes_count: 0,
+      liked_by_user: false
+    };
+
+    posts.unshift(post);
+    console.log(`Post created: ${post.id} by ${user.username}`);
+    res.json(post);
+  } catch (error) {
+    console.error('Post creation error:', error);
+    res.status(500).json({ detail: 'Internal server error' });
   }
-
-  if (content.length > 280) {
-    return res.status(400).json({ detail: 'Content must be 280 characters or less' });
-  }
-
-  const user = findUserById(req.user.user_id);
-  const post = {
-    id: uuidv4(),
-    user_id: user.id,
-    username: user.username,
-    name: user.name,
-    content: content.trim(),
-    created_at: new Date().toISOString(),
-    likes_count: 0,
-    liked_by_user: false
-  };
-
-  posts.unshift(post);
-  res.json(post);
 });
 
 app.get('/posts/timeline', authenticateToken, (req, res) => {
