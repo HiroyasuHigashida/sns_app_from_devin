@@ -50,14 +50,18 @@ interface PostResponse {
   isLiked: boolean;
 }
 
-export const useGetPost = () => {
+export const useGetPost = (offset?: number, limit?: number) => {
   return useQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", offset, limit],
     queryFn: async () => {
-      const rowPosts = (await get("/api/posts")) as PostResponse[];
+      const params = new URLSearchParams();
+      if (offset !== undefined) params.append('offset', offset.toString());
+      if (limit !== undefined) params.append('limit', limit.toString());
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const rowPosts = (await get(`/api/posts${queryString}`)) as {Items: PostResponse[]};
 
       // 投稿を時間で昇順にソート
-      const sortedPosts = rowPosts.sort((a: PostResponse, b: PostResponse) => {
+      const sortedPosts = rowPosts.Items.sort((a: PostResponse, b: PostResponse) => {
         return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
       });
 

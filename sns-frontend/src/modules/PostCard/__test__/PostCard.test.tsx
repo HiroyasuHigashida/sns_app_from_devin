@@ -4,6 +4,7 @@ import { PostCard } from '../PostCard';
 
 describe('ポストカード', () => {
   const mockProps = {
+    id: 1,
     username: 'John Doe',
     handle: 'johndoe',
     content: 'This is a test post',
@@ -67,4 +68,4 @@ describe('ポストカード', () => {
     fireEvent.click(screen.getByLabelText('share'));
     expect(mockProps.onShare).toHaveBeenCalledTimes(1);
   });
-}); 
+});  

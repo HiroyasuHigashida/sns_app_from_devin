@@ -3,7 +3,7 @@
  * フィード内の各投稿を表示するカードコンポーネントです。
  * ユーザー情報、投稿内容、エンゲージメント（いいね、コメント、リツイート、シェア）機能を提供します。
  */
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,13 +11,21 @@ import {
   Typography,
   Box,
   IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import ShareIcon from "@mui/icons-material/Share";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Avatar } from "@/components/Avatar";
+import { useCurrentUser } from "../../contexts/CurrentUserContext";
 import {
   cardStyles,
   cardContentStyles,
@@ -51,6 +59,7 @@ import {
  * @property {() => void} [onShare] - シェアボタン押下時のコールバック
  */
 export interface PostCardProps {
+  id: number;
   username: string;
   handle: string;
   avatar?: string;
@@ -64,6 +73,8 @@ export interface PostCardProps {
   onComment?: () => void;
   onRetweet?: () => void;
   onShare?: () => void;
+  onEdit?: (postId: number, content: string) => void;
+  onDelete?: (postId: number) => void;
 }
 
 /**
@@ -74,6 +85,7 @@ export interface PostCardProps {
  * @returns {React.ReactElement} 投稿カードコンポーネント
  */
 export const PostCard: React.FC<PostCardProps> = ({
+  id,
   username,
   handle,
   avatar,
@@ -87,7 +99,30 @@ export const PostCard: React.FC<PostCardProps> = ({
   onComment,
   onRetweet,
   onShare,
+  onEdit,
+  onDelete,
 }) => {
+  const { isOwner } = useCurrentUser();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    onEdit?.(id, content);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    onDelete?.(id);
+  };
   return (
     <Card sx={cardStyles}>
       <CardContent sx={cardContentStyles}>
@@ -109,6 +144,11 @@ export const PostCard: React.FC<PostCardProps> = ({
               <Typography variant="body2" sx={secondaryTextStyles}>
                 {timestamp}
               </Typography>
+              {isOwner(username) && (
+                <IconButton size="small" onClick={handleMenuClick} sx={{ ml: 'auto' }}>
+                  <MoreHorizIcon fontSize="small" />
+                </IconButton>
+              )}
             </Box>
             {/* 投稿内容 */}
             <Typography variant="body1" sx={contentStyles}>
@@ -160,6 +200,28 @@ export const PostCard: React.FC<PostCardProps> = ({
           <ShareIcon fontSize="small" />
         </IconButton>
       </CardActions>
+      {isOwner(username) && (
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem onClick={handleEdit}>
+            <ListItemIcon>
+              <EditIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="編集" />
+          </MenuItem>
+          <MenuItem onClick={handleDelete}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="削除" />
+          </MenuItem>
+        </Menu>
+      )}
     </Card>
   );
 };

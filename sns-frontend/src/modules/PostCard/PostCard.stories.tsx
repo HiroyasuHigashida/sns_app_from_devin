@@ -15,6 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    id: 1,
     username: "Jane Doe",
     handle: "janedoe",
     avatar: "https://mui.com/static/images/avatar/2.jpg",
@@ -29,6 +30,7 @@ export const Default: Story = {
 
 export const Liked: Story = {
   args: {
+    id: 2,
     username: "Jane Doe",
     handle: "janedoe",
     avatar: "https://mui.com/static/images/avatar/2.jpg",
@@ -43,6 +45,7 @@ export const Liked: Story = {
 
 export const LongContent: Story = {
   args: {
+    id: 3,
     username: "John Smith",
     handle: "johnsmith",
     avatar: "https://mui.com/static/images/avatar/1.jpg",
