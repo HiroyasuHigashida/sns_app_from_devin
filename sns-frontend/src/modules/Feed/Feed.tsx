@@ -10,6 +10,7 @@ import { PostCard } from "@/modules/PostCard";
 import { usePost } from "./api/usePost";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { useGetPost } from "./api/useGetPost";
+import { useLike, useUnlike } from "./api/useLike";
 import {
   paperStyles,
   emptyStateStyles,
@@ -55,6 +56,9 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [] }) => 
   // 投稿を作成するカスタムフック（投稿後にフィードを再取得）
   const { mutate: post } = usePost(() => postRefetch());
 
+  const { mutate: likePost } = useLike(() => postRefetch());
+  const { mutate: unlikePost } = useUnlike(() => postRefetch());
+
   /**
    * 投稿フォームからの送信時に呼ばれるハンドラ
    * 
@@ -69,10 +73,14 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [] }) => 
   };
 
   /**
-   * いいねボタンクリック時のハンドラ（将来実装予定）
+   * いいねボタンクリック時のハンドラ
    */
-  const handleLike = () => {
-    // いいね機能の実装予定
+  const handleLike = (postId: number, isLiked: boolean) => {
+    if (isLiked) {
+      unlikePost(postId);
+    } else {
+      likePost(postId);
+    }
   };
 
   return (
@@ -95,7 +103,7 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [] }) => 
               comments={post.comments}
               retweets={post.retweets}
               isLiked={post.isLiked}
-              onLike={() => handleLike()}
+              onLike={() => handleLike(post.id, post.isLiked)}
               onComment={() => {}}
               onRetweet={() => {}}
               onShare={() => {}}

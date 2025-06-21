@@ -3,12 +3,11 @@ import { post } from "@/api/methods";
 
 interface PostData {
   content: string;
-  user: string;
 }
 
 export const usePost = (refetch: () => void) => {
   return useMutation({
-    mutationFn: (data: PostData) => post("/posts", data),
+    mutationFn: (data: PostData) => post("/api/posts", data),
     onSuccess: () => {
       refetch();
     },
