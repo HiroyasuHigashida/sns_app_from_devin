@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["owner"],
+  "properties": {
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}]*$"
+    }
+  }
+}

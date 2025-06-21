@@ -1,0 +1,12 @@
+{
+  "required": ["content"],
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 140,
+      "pattern": "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}\\n\\r]*$"
+    }
+  }
+}

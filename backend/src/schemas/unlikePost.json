@@ -1,0 +1,11 @@
+{
+  "required": ["postid"],
+  "type": "object",
+  "properties": {
+    "postid": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 65536
+    }
+  }
+}

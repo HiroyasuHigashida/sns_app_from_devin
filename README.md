@@ -1,96 +1,132 @@
-# SNS App - X風ソーシャルネットワーキングサービス
+# T-1グランプリ Node.js express x Vue.js
+このリポジトリは、Node.js express x Vue.jsのリポジトリです
 
-## 概要
-X（旧Twitter）風のSNSアプリケーションです。ユーザー認証、投稿、フォロー、いいね、検索機能を実装したフルスタックWebアプリケーションです。
+## 使い方
+### 事前準備
+- docker
+- docker compose v2
 
-## 技術スタック
-- **フロントエンド**: React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **バックエンド**: FastAPI (Python) + JWT認証
-- **データベース**: インメモリデータベース（開発用）
+### 開始方法
 
-## 実装済み機能
-
-### ✅ ユーザー機能
-- ユーザー登録・ログイン・ログアウト
-- ユーザープロフィール（名前、ユーザー名、自己紹介）
-- プロフィール編集（認証済みユーザーのみ）
-
-### ✅ 投稿機能
-- テキスト投稿（最大280文字）
-- 投稿の一覧表示（自分＋フォロー中のユーザー）
-- 投稿の削除（本人のみ可能）
-
-### ✅ タイムライン
-- 自分とフォロー中のユーザーの投稿を新着順で表示
-- リアルタイム更新機能
-
-### ✅ フォロー機能
-- フォロー / フォロー解除
-- フォロー中・フォロワー一覧
-- 他人のプロフィールページからフォロー可能
-
-### ✅ いいね機能
-- 投稿への「いいね」ボタン（トグル）
-- いいね数の表示
-
-### ✅ 検索機能
-- ユーザー検索（名前、ユーザー名）
-- 投稿検索（キーワード）
-
-### ✅ UI/UX
-- レスポンシブデザイン（PC・スマホ対応）
-- モダンなUI（shadcn/ui使用）
-- 直感的な操作性
-
-## セットアップ方法
-
-### バックエンド
-```bash
-cd sns-backend
-poetry install
-poetry run fastapi dev app/main.py
+``` bash
+docker compose up -d
 ```
 
-### フロントエンド
-```bash
-cd sns-frontend
-npm install
-npm run dev
+上記で環境が全て起動します。※ちょっとだけ時間がかかります
+
+- 画面: [http://localhost:5173/](http://localhost:5173/)
+- API: [http://localhost:15001/](http://localhost:15001/)
+
+
+### もしマイグレーションが走らなかった場合
+もし、500エラーが出ていれば、マイグレーションを試してください
+``` bsah
+docker exec -it sns-app npx typeorm-ts-node-commonjs migration:run -d ./src/data-source.ts
 ```
 
-## API エンドポイント
+### 停止
+``` bash
+docker compose down
+```
 
-### 認証
-- `POST /auth/register` - ユーザー登録
-- `POST /auth/login` - ログイン
+もし、データをクリアしたい場合は、`-v`オプションをつけるとボリュームを削除します。
 
-### ユーザー
-- `GET /users/me` - 自分の情報取得
-- `PUT /users/me` - プロフィール更新
-- `GET /users/{username}` - ユーザー情報取得
-- `GET /users/search` - ユーザー検索
+``` bash
+docker compose down -v
+```
+## ディレクトリ構成
+```
+.
+├── backend: バックエンドAPIのコードを格納したフォルダ。APIはこのフォルダを改修します
+├── db: DBの設定ファイルなどを格納。特に変更することはありません
+├── docker-compose.test.yml: GitHub Actionsで使うdocker composeファイル。
+├── docker-compose.yml: 一連のコンテナを起動するファイル
+├── docs: ドキュメント類
+├── README.md: フロントのコードを格納したフォルダ。フロントはこのフォルダを改修します
+├── readme.md: このファイル
+└── sonar-project.properties: sonarqubeの設定ファイル。最初にprojectKeyを変更します
+```
 
-### 投稿
-- `POST /posts` - 投稿作成
-- `GET /posts/timeline` - タイムライン取得
-- `DELETE /posts/{post_id}` - 投稿削除
-- `GET /posts/search` - 投稿検索
+## 開発に際して
+- 全てのソースを、コンテナにマウントしているため、ローカルの変更がコンテナにコピーされます。なので、ローカルでコードを変更すると即座に反映されます。
+- コンテナ上で作成されたファイルは、root権限になっています。その後ローカルで編集する場合、`chown`などで変更してください
 
-### フォロー
-- `POST /follow/{user_id}` - フォロー
-- `DELETE /follow/{user_id}` - フォロー解除
-- `GET /users/{user_id}/followers` - フォロワー一覧
-- `GET /users/{user_id}/following` - フォロー中一覧
 
-### いいね
-- `POST /posts/{post_id}/like` - いいね
-- `DELETE /posts/{post_id}/like` - いいね解除
+## テストについて
+### テストを作成するときの注意事項
+#### バックエンドAPI
+- 必ず、`./backend/tests`配下に、`*.test.ts`の形式で作成してください
+- `jest`でTypescriptで記載できるように設定してます。
+- `./backend/.env.test`がtest用の設定ファイルです。必要なものがあれば追記してください
+- DBは、テスト用のスキーマ`sns-app-test`を準備しています。DBはマイグレーション直後から始まる想定でテストを作ってください
+- `jest`以外のテストライブラリを利用することも可能です。その場合、`package.json`を編集して、`npm run test`で動作するように設定してください。また、追加のライブラリを自由にインストールしてください
+- `./backend/coverage/lcov.info`にカバレッジレポートを出力してください。（デフォルトで出力するはずです）
 
-## 開発者情報
-- 開発者: Devin AI
-- 要件定義: higashida@kdl.co.jp
-- Devinセッション: https://app.devin.ai/sessions/693f211814254ad5a1eef1dc63a00cbd
+#### フロントのユニットテスト
+- 必ず、`./front/tests`配下に、`*.spec.ts`の形式で作成してください。
+- `vitest`でテストを動作させる想定です。
+- テストは、必ず`npm run test`で実行できるようにしておいてください。
+- `./front/coverage/lcov.info`にカバレッジレポートを出力してください。（デフォルトで出力するはずです）
 
-## 注意事項
-- 現在はインメモリデータベースを使用しているため、サーバー再起動時にデータは失われます
-- 本番環境では永続化データベース（PostgreSQL等）への移行を推奨します
+### 実行
+#### バックエンドAPI
+- 全て実行
+    ``` bash
+    docker exec -it sns-app npm run test
+    ```
+- ファイル名を指定して実行
+    ``` bash
+    docker exec -it sns-app npm run test <ファイルの相対パス>
+    ```
+
+※ jestのオプションをつける
+
+package.jsonを開いて下記を修正してください
+
+``` json
+"test": "jest --runInBand"
+```
+
+初期でついているrunInBandは、直列実行のオプションです。DBを使う場合に並列実行にすると、テスト間で干渉することがあります。
+
+#### フロント
+- 全て実行
+    ``` bash
+    docker exec -it sns-front npm run test:unit
+    ```
+
+    以降、`q`を押すまで、テストがホットリロードされます。修正したファイルに関係するテストが自動実行されるようになります。
+
+    終了するときは、`q`かCtrl+Cを押してください
+
+## Tips
+### マイグレーション用ファイルの作成
+事前にentityファイルを作成し、修正しておく
+
+- entityファイル群とDBから差分migrationファイルを作成する
+    ``` bash
+    docker exec -it sns-app npx typeorm-ts-node-commonjs migration:generate ./src/migration/<テーブル名> -d ./src/data-source.ts
+    ```
+
+内容は問題ないので、そのままマイグレーションを実行する
+
+- マイグレーションの実行
+    ``` bsah
+    docker exec -it sns-app npx typeorm-ts-node-commonjs migration:run -d ./src/data-source.ts
+    ```
+
+### ログの見方
+アプリケーションが出力するログは、下記のコマンドでインタラクティブに表示されるので、動作中はずっと起動しておくとよい。
+```
+docker compose logs -f app
+```
+### DBを見る
+```
+mysql -u homepage -p --port 13306  --protocol tcp sns-api
+パスワード:   ←　.env.developmentのMYSQL_PASSWORD
+```
+
+## ドキュメント
+- [DB定義](./docs/database.md)
+- [ログ設計](./docs/logs.md)
+

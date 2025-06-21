@@ -1,0 +1,492 @@
+openapi: "3.1.0"
+info:
+  title: "T-1グランプリAPI"
+  description: "T-1グランプリ バックエンドAPI"
+  version: 1.0.0
+servers:
+  - url: "http://localhost:15001/api"
+    description: "ローカル環境"
+paths:
+  /posts:
+    post:
+      summary: "投稿する"
+      description: "contentの内容を自身の投稿としてDBに保管する。userの情報は認証情報から取得する。"
+      operationId: "create_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+        required: true
+      responses:
+        "201":
+          description: "新しくpostを作成できた場合は、postオブジェクトを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "422":
+          description: "入力形式に不備があった場合は、422エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntityMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+      security:
+        - IdTokenAuth: []
+    get:
+      summary: "全ての投稿を取得する"
+      description: "全ての投稿を取得する"
+      operationId: "read_all_posts"
+      responses:
+        "200":
+          description: "投稿オブジェクトが配列形式で格納されたjsonを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadAllPostResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+      security:
+        - IdTokenAuth: []
+  /posts/{owner}:
+    get:
+      summary: "ownerの投稿を取得する"
+      description: "ownerの投稿を取得する。ownerはusernameである。"
+      operationId: "read_posts_by_owner"
+      security:
+        - IdTokenAuth: []
+      parameters:
+        - name: "owner"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            minLength: 1
+            maxLength: 128
+            pattern: "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}]*$"
+            description: "投稿者のusername"
+            title: "Owner"
+            examples:
+              - value: "testuser"
+          description: "投稿者のusername"
+      responses:
+        "200":
+          description: "投稿オブジェクトが配列形式で格納されたjsonを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadPostByOwnerResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "422":
+          description: "入力形式に不備があった場合は、422エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntityMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+  /posts/{postid}:
+    delete:
+      summary: "postidの投稿を削除する"
+      description: "postidの投稿を削除する"
+      operationId: "delete_post"
+      security:
+        - IdTokenAuth: []
+      parameters:
+        - name: "postid"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            description: "投稿のid"
+            title: "Postid"
+            minimum: 1
+            maximum: 65536
+            examples: 
+              - value: 1
+          description: "投稿のid"
+      responses:
+        "204":
+          description: "削除が成功した場合、空のjsonを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletePostResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "403":
+          description: "参照や削除ができないpostにアクセスした場合は、403エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenMessage"
+        "404":
+          description: "削除対象のpostが存在しない場合は、404エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundMessage"
+        "422":
+          description: "入力形式に不備があった場合は、422エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntityMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+  /likes:
+    post:
+      summary: "likeする"
+      description: "指定された投稿に対してlikeする.レスポンスは、like後の投稿のlike数"
+      operationId: "create_like"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLikeRequest"
+        required: true
+      responses:
+        "201":
+          description: "like成功。レスポンスは、like後の投稿のlike数"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateLikeResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "422":
+          description: "入力形式に不備があった場合は、422エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntityMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+      security:
+        - IdTokenAuth: []
+  /likes/{postid}:
+    delete:
+      summary: "unlikeする"
+      description: "指定された投稿に対して、likeを解除する"
+      operationId: "unlike_by_postid"
+      security:
+        - IdTokenAuth: []
+      parameters:
+        - name: "postid"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            description: "投稿のid"
+            title: "Postid"
+            minimum: 1
+            maximum: 65536
+          examples: 
+            - value: 1
+          description: "投稿のid"
+      responses:
+        "200":
+          description: "unlike成功。レスポンスは、unlike後の投稿のlike数"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteLikeResponse"
+        "401":
+          description: "IDトークンの検証に失敗した場合は、401エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedMessage"
+        "403":
+          description: "削除ができないpostにアクセスした場合は、403エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenMessage"
+        "404":
+          description: "削除対象のlikeが存在しない場合は、404エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundMessage"
+        "422":
+          description: "入力形式に不備があった場合は、422エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessableEntityMessage"
+        "500":
+          description: "内部処理で例外エラーが発生した場合は、500エラーを返す。"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorMessage"
+components:
+  schemas:
+    CommonMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Bad Request"
+      type: "object"
+      required:
+      - "message"
+      title: "CommonMessage"
+    UnauthorizedMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Unauthorized"
+      type: "object"
+      required:
+        - "message"
+      title: "UnauthorizedMessage"
+    ForbiddenMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Forbidden"
+      type: "object"
+      required:
+        - "message"
+      title: "ForbiddenMessage"
+    NotFoundMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Not Found"
+      type: "object"
+      required:
+        - "message"
+      title: "NotFoundMessage"
+    UnprocessableEntityMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Unprocessable Entity"
+      type: "object"
+      required:
+        - "message"
+      title: "UnprocessableEntityMessage"
+    InternalServerErrorMessage:
+      properties:
+        message:
+          type: "string"
+          title: "Message"
+          examples: 
+            - "Internal Server Error"
+      type: "object"
+      required:
+        - "message"
+      title: "InternalServerErrorMessage"
+    CreatePostRequest:
+      properties:
+        content:
+          type: "string"
+          maxLength: 140
+          minLength: 1
+          pattern: "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}\\n\\r]*$"
+          title: "Content"
+          examples:
+            - "Hello, World!"
+      type: "object"
+      required:
+      - "content"
+      title: "CreatePostRequest"
+    DeletePostResponse:
+      properties: {}
+      type: "object"
+      title: "DeletePostResponse"
+      examples:
+        - {}
+    PostResponse:
+      properties:
+        id:
+          type: "integer"
+          title: "Id"
+          examples:
+            - 1
+        type:
+          anyOf:
+          - $ref: "#/components/schemas/PostType"
+          - type: "null"
+        content:
+          type: "string"
+          title: "Content"
+          examples:
+            - "Hello, World!"
+        user:
+          $ref: "#/components/schemas/PostUser"
+        posted_at:
+          type: "string"
+          format: "date-time"
+          title: "Posted At"
+          examples:
+            - "2024-04-20T06:27:11.501Z"
+        likeCount:
+          type: "integer"
+          title: "likeCount"
+          description: "投稿のlike数"
+          examples:
+            - 0
+        isLiked:
+          type: "boolean"
+          title: "isLiked"
+          description: "自身がその投稿をlikeしているかどうか"
+          examples:
+            - false
+      type: "object"
+      required:
+        - "id"
+        - "type"
+        - "content"
+        - "user"
+        - "posted_at"
+        - "likeCount"
+        - "isLiked"
+      title: "PostResponse"
+    PostType:
+      type: "string"
+      const: "post"
+      title: "PostType"
+    PostUser:
+      properties:
+        username:
+          type: "string"
+          title: "Username"
+          examples:
+            - "testuser"
+      type: "object"
+      required:
+      - "username"
+      title: "PostUser"
+    ReadAllPostResponse:
+      properties:
+        Items:
+          items:
+            $ref: "#/components/schemas/PostResponse"
+          type: "array"
+          title: "Items"
+      type: "object"
+      required:
+      - "Items"
+      title: "ReadAllPostResponse"
+    ReadPostByOwnerResponse:
+      properties:
+        Items:
+          items:
+            $ref: "#/components/schemas/PostResponse"
+          type: "array"
+          title: "Items"
+      type: "object"
+      required:
+      - "Items"
+      title: "ReadPostByOwnerResponse"
+    CreateLikeResponse:
+      properties:
+        likeCount:
+          type: "integer"
+          title: "likeCount"
+          examples:
+            - 500
+        isLiked:
+          type: "boolean"
+          title: "isLiked"
+          examples:
+            - true
+      type: "object"
+      title: "CreateLikeResponse"
+      required:
+        - "likeCount"
+        - "isLiked"
+    CreateLikeRequest:
+      properties:
+        postid:
+          type: "integer"
+          minimum: 1
+          maximum: 65536
+          title: "postid"
+      type: "object"
+      required:
+        - "postid"
+      title: "CreateLikeRequest"
+    DeleteLikeResponse:
+      properties:
+        likeCount:
+          type: "integer"
+          title: "likeCount"
+          examples:
+            - 499
+        isLiked:
+          type: "boolean"
+          title: "isLiked"
+          examples:
+            - false
+      type: "object"
+      title: "DeleteLikeResponse"
+      required:
+        - "likeCount"
+        - "isLiked"
+  securitySchemes:
+    IdTokenAuth:
+      type: "apiKey"
+      description: "Cognitoから取得したidTokenをAuthorizationヘッダに設定する。"
+      in: "header"
+      name: "Authorization"

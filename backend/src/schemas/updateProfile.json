@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["profile"],
+  "properties": {
+    "profile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}\\n\\r]*$"
+    }
+  }
+}

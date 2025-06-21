@@ -1,0 +1,94 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0
+    platform: linux/amd64
+    container_name: sns-app-db
+    env_file: ./db/mysql.env
+    healthcheck:
+      test: [ 'CMD', 'mysqladmin', 'ping', '-h', 'localhost' ]
+      timeout: 20s
+      retries: 10
+    ports:
+      - '13306:3306'
+    # 以下のcommandは、Windowsでマウントされるファイルが全権限になる問題への対処
+    entrypoint:
+      - sh
+    command:
+      - -c
+      - |
+        chmod 644 /etc/mysql/conf.d/my.cnf && exec docker-entrypoint.sh mysqld
+    volumes:
+      - ./db/conf:/etc/mysql/conf.d/
+      - db-store:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+
+  app:
+    build:
+      context: ./backend/
+      dockerfile: ./Dockerfile
+    container_name: sns-app
+    environment:
+      - DEBUG=app:*
+    tty: true
+    ports:
+      - '15001:5000'
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    # 以下のcommandは、volumesをマウントして開発中にソースを常に反映させるために、マウント後に実行するコマンド
+    entrypoint:
+      - sh
+    command:
+      - -c
+      - |
+        npm install && npx typeorm-ts-node-commonjs migration:run -d ./src/database/AppDataSource.ts && npm run dev
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # front:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./front/Dockerfile
+  #   container_name: sns-front
+  #   environment:
+  #     - TZ=Asia/Tokyo
+  #   ports:
+  #     - '5173:5173'
+  #   volumes:
+  #     - ./front:/app
+  #   working_dir: /app
+  #   command: /bin/sh -c '[ -f ~/.exec-once ] || { npm install && touch ~/.exec-once; } && npx vite --host 0.0.0.0'
+  #   expose:
+  #     - 5173
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    command: server /data --console-address ':9001'
+
+  createbuckets:
+    image: "minio/mc"
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      echo start_up;
+      sleep 5;
+      /usr/bin/mc config host add myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/icons;
+      exit 0;
+      "
+
+volumes:
+  db-store:
+  minio_data:

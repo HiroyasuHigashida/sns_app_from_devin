@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sns-app-db
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin --default-authentication-plugin=mysql_native_password  --default-time-zone=UTC
+    volumes:
+      - demo-test-store:/var/lib/mysql
+      - ./db/conf:/etc/mysql/conf.d/
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: kdlkdlkdl
+      MYSQL_DATABASE: sns-api-test
+      MYSQL_USER: homepage
+      MYSQL_PASSWORD: kdlkdlkdl
+    ports:
+      - 3306:3306
+volumes:
+  demo-test-store:

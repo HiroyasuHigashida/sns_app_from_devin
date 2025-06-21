@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": ["iconImage"],
+  "properties": {
+    "iconImage": {
+      "type": "string"
+    }
+  }
+}

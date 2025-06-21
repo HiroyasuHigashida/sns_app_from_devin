@@ -1,0 +1,17 @@
+{
+  "required": ["postid", "content"],
+  "type": "object",
+  "properties": {
+    "postid": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 65536
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 140,
+      "pattern": "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}\\n\\r]*$"
+    }
+  }
+}

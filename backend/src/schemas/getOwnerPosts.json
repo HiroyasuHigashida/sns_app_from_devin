@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": ["owner"],
+  "properties": {
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[\\p{L}\\p{M}\\p{N}\\p{P}\\p{S}\\p{Z}]*$"
+    },
+    "offset": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "limit": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
