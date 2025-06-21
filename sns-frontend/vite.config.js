@@ -1,0 +1,42 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+// https://vitejs.dev/config/
+export default defineConfig({
+    build: {
+        sourcemap: false,
+    },
+    plugins: [react()],
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "src"),
+        },
+    },
+    test: {
+        globals: true,
+        environment: "jsdom",
+        setupFiles: "./vitest.setup.ts",
+        include: ["**/__test__/**/*.test.tsx", "**/__test__/**/*.test.ts"],
+        coverage: {
+            provider: "istanbul",
+            reporter: ["text", "lcov"],
+            include: ["src/**/*.tsx", "src/**/*.ts"],
+            // Pages配下は現状空なので一旦除外 todo:Pages配下を単体でもテストするか、E2Eテストでカバーするかを検討
+            exclude: [
+                "src/App.tsx",
+                "src/main.tsx",
+                "src/api/methods.ts",
+                "src/mock/*",
+                "src/**/api/*",
+                "src/Pages/**",
+                "**/*.stories.tsx",
+                "**/__test__/**",
+            ],
+            thresholds: {
+                branches: 80,
+            },
+        },
+    },
+});
