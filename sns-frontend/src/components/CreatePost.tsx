@@ -6,14 +6,16 @@ import { Textarea } from './ui/textarea'
 import { Alert, AlertDescription } from './ui/alert'
 
 interface Post {
-  id: string
-  user_id: string
-  username: string
-  name: string
+  id: number
+  type: string
   content: string
-  created_at: string
-  likes_count: number
-  liked_by_user: boolean
+  user: {
+    username: string
+    iconImage: string
+  }
+  postedAt: string
+  likeCount: number
+  isLiked: boolean
 }
 
 interface CreatePostProps {
@@ -28,19 +30,15 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted, token:', !!token, 'content:', content.trim())
     if (!token || !content.trim()) {
-      console.log('Early return - no token or content')
       return
     }
 
     setError('')
     setLoading(true)
-    console.log('About to call api.createPost')
 
     try {
-      const newPost = await api.createPost(token, content.trim())
-      console.log('Post created successfully:', newPost)
+      const newPost = await api.createPost(token, { content: content.trim() })
       onPostCreated(newPost)
       setContent('')
     } catch (err) {
@@ -51,7 +49,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
     }
   }
 
-  const remainingChars = 280 - content.length
+  const remainingChars = 140 - content.length
 
   return (
     <div className="p-4">
@@ -64,14 +62,14 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
         <div className="flex space-x-3">
           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-            {user?.name.charAt(0).toUpperCase()}
+            {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="flex-1">
             <Textarea
               placeholder="What's happening?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              maxLength={280}
+              maxLength={140}
               rows={3}
               className="resize-none border-none focus:ring-0 text-lg placeholder-gray-500"
               disabled={loading}

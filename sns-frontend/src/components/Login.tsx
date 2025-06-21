@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -8,7 +7,6 @@ import { Alert, AlertDescription } from './ui/alert'
 
 export default function Login() {
   const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -19,7 +17,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await login(username, password)
+      await login(username)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -39,7 +37,7 @@ export default function Login() {
           <CardHeader>
             <CardTitle>Sign in to your account</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              Enter your username to access your account (development mode)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -61,17 +59,6 @@ export default function Login() {
                 />
               </div>
 
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
@@ -79,10 +66,7 @@ export default function Login() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-blue-600 hover:text-blue-500 font-medium">
-                  Sign up
-                </Link>
+                Development mode: Authentication is handled externally in production
               </p>
             </div>
           </CardContent>

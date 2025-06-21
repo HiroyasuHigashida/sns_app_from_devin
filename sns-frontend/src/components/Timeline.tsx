@@ -7,14 +7,16 @@ import { Button } from './ui/button'
 import { RefreshCw } from 'lucide-react'
 
 interface Post {
-  id: string
-  user_id: string
-  username: string
-  name: string
+  id: number
+  type: string
   content: string
-  created_at: string
-  likes_count: number
-  liked_by_user: boolean
+  user: {
+    username: string
+    iconImage: string
+  }
+  postedAt: string
+  likeCount: number
+  isLiked: boolean
 }
 
 export default function Timeline() {
@@ -30,7 +32,7 @@ export default function Timeline() {
     else setLoading(true)
 
     try {
-      const timelinePosts = await api.getTimeline(token)
+      const timelinePosts = await api.getPosts(token)
       setPosts(timelinePosts)
     } catch (error) {
       console.error('Failed to fetch timeline:', error)
@@ -48,14 +50,14 @@ export default function Timeline() {
     setPosts([newPost, ...posts])
   }
 
-  const handlePostDeleted = (postId: string) => {
+  const handlePostDeleted = (postId: number) => {
     setPosts(posts.filter(post => post.id !== postId))
   }
 
-  const handlePostLiked = (postId: string, liked: boolean, newLikesCount: number) => {
+  const handlePostLiked = (postId: number, liked: boolean, newLikesCount: number) => {
     setPosts(posts.map(post => 
       post.id === postId 
-        ? { ...post, liked_by_user: liked, likes_count: newLikesCount }
+        ? { ...post, isLiked: liked, likeCount: newLikesCount }
         : post
     ))
   }

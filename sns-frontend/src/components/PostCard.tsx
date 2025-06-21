@@ -7,20 +7,22 @@ import { Heart, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Post {
-  id: string
-  user_id: string
-  username: string
-  name: string
+  id: number
+  type: string
   content: string
-  created_at: string
-  likes_count: number
-  liked_by_user: boolean
+  user: {
+    username: string
+    iconImage: string
+  }
+  postedAt: string
+  likeCount: number
+  isLiked: boolean
 }
 
 interface PostCardProps {
   post: Post
-  onDeleted: (postId: string) => void
-  onLiked: (postId: string, liked: boolean, newLikesCount: number) => void
+  onDeleted: (postId: number) => void
+  onLiked: (postId: number, liked: boolean, newLikesCount: number) => void
 }
 
 export default function PostCard({ post, onDeleted, onLiked }: PostCardProps) {
@@ -32,12 +34,12 @@ export default function PostCard({ post, onDeleted, onLiked }: PostCardProps) {
 
     setLoading(true)
     try {
-      if (post.liked_by_user) {
-        await api.unlikePost(token, post.id)
-        onLiked(post.id, false, post.likes_count - 1)
+      if (post.isLiked) {
+        const result = await api.unlikePost(token, post.id)
+        onLiked(post.id, result.isLiked, result.likeCount)
       } else {
-        await api.likePost(token, post.id)
-        onLiked(post.id, true, post.likes_count + 1)
+        const result = await api.likePost(token, post.id)
+        onLiked(post.id, result.isLiked, result.likeCount)
       }
     } catch (error) {
       console.error('Failed to toggle like:', error)
@@ -69,22 +71,25 @@ export default function PostCard({ post, onDeleted, onLiked }: PostCardProps) {
     }
   }
 
-  const isOwnPost = user?.id === post.user_id
+  const isOwnPost = user?.username === post.user.username
 
   return (
     <Card className="hover:bg-gray-50 transition-colors">
       <CardContent className="p-4">
         <div className="flex space-x-3">
           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-            {post.name.charAt(0).toUpperCase()}
+            {post.user.iconImage ? (
+              <img src={post.user.iconImage} alt={post.user.username} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              post.user.username.charAt(0).toUpperCase()
+            )}
           </div>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-gray-900">{post.name}</span>
-              <span className="text-gray-500">@{post.username}</span>
+              <span className="font-semibold text-gray-900">@{post.user.username}</span>
               <span className="text-gray-500">·</span>
-              <span className="text-gray-500 text-sm">{formatDate(post.created_at)}</span>
+              <span className="text-gray-500 text-sm">{formatDate(post.postedAt)}</span>
               
               {isOwnPost && (
                 <div className="ml-auto">
@@ -112,13 +117,13 @@ export default function PostCard({ post, onDeleted, onLiked }: PostCardProps) {
                 onClick={handleLike}
                 disabled={loading}
                 className={`flex items-center space-x-2 p-2 rounded-full hover:bg-red-50 ${
-                  post.liked_by_user ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                  post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
                 }`}
               >
                 <Heart 
-                  className={`h-4 w-4 ${post.liked_by_user ? 'fill-current' : ''}`} 
+                  className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} 
                 />
-                <span className="text-sm">{post.likes_count}</span>
+                <span className="text-sm">{post.likeCount}</span>
               </Button>
             </div>
           </div>
