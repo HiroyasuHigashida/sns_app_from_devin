@@ -46,24 +46,24 @@ describe('フィード', () => {
 
   it('ポストが利用可能な場合にレンダリングされる', () => {
     // この特定のテストのためにモックを上書き
-    // @ts-expect-error - モックに完全なUseQueryResult型のプロパティが不足しているため
+
     vi.mocked(useGetPost).mockReturnValue({
       refetch: vi.fn(),
       data: [
         {
-          id: '1',
+          id: 1,
           username: 'John Doe',
           handle: 'johndoe',
+          avatar: "",
           content: 'Test post content',
           timestamp: '2h',
           likes: 5,
           comments: 2,
           retweets: 1,
           isLiked: false,
-          avatar: "",
         },
       ],
-    });
+    } as any);
 
     render(<Feed />);
     expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -73,4 +73,4 @@ describe('フィード', () => {
 });
 
 // TypeScriptを満たすためにAPIフックをインポート
-import { useGetPost } from '../api/useGetPost'; 
+import { useGetPost } from '../api/useGetPost';    

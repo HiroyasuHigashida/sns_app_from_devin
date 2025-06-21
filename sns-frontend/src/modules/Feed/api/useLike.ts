@@ -1,10 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { post, deleteRequest } from "@/api/methods";
 
-interface LikeResponse {
-  likeCount: number;
-  isLiked: boolean;
-}
+
 
 export const useLike = (refetch: () => void) => {
   return useMutation({

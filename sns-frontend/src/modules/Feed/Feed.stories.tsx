@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 const mockPosts = [
   {
-    id: "1",
+    id: 1,
     username: "Jane Doe",
     handle: "janedoe",
     avatar: "https://mui.com/static/images/avatar/2.jpg",
@@ -27,7 +27,7 @@ const mockPosts = [
     isLiked: false,
   },
   {
-    id: "2",
+    id: 2,
     username: "John Smith",
     handle: "johnsmith",
     avatar: "https://mui.com/static/images/avatar/1.jpg",
@@ -40,7 +40,7 @@ const mockPosts = [
     isLiked: true,
   },
   {
-    id: "3",
+    id: 3,
     username: "Alex Johnson",
     handle: "alexj",
     avatar: "https://mui.com/static/images/avatar/3.jpg",
