@@ -38,17 +38,23 @@ export const formatTimestamp = (timestamp: number | string): string => {
 };
 
 interface PostResponse {
-  id: string;
-  username: string;
+  id: number;
+  type: string;
   content: string;
+  user: {
+    username: string;
+    iconImage: string;
+  };
   postedAt: string;
+  likeCount: number;
+  isLiked: boolean;
 }
 
 export const useGetPost = () => {
   return useQuery({
     queryKey: ["posts"],
     queryFn: async () => {
-      const rowPosts = (await get("/posts")) as PostResponse[];
+      const rowPosts = (await get("/api/posts")) as PostResponse[];
 
       // 投稿を時間で昇順にソート
       const sortedPosts = rowPosts.sort((a: PostResponse, b: PostResponse) => {
@@ -57,15 +63,15 @@ export const useGetPost = () => {
 
       const posts = sortedPosts.map((post: PostResponse) => ({
         id: post.id,
-        username: post.username,
-        handle: "user",
-        avatar: "",
+        username: post.user.username,
+        handle: post.user.username.toLowerCase(),
+        avatar: post.user.iconImage || "",
         content: post.content,
         timestamp: formatTimestamp(post.postedAt),
-        likes: 0,
+        likes: post.likeCount,
         comments: 0,
         retweets: 0,
-        isLiked: false,
+        isLiked: post.isLiked,
       }));
 
       return posts;
