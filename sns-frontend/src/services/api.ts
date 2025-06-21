@@ -1,162 +1,137 @@
-const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000'
-
-interface LoginResponse {
-  access_token: string
-  token_type: string
-}
+const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:15001'
 
 interface User {
-  id: string
   username: string
-  email: string
-  name: string
-  bio: string
-  created_at: string
-  followers_count: number
-  following_count: number
+  profile?: string
+  iconImage?: string
 }
 
 interface Post {
-  id: string
-  user_id: string
-  username: string
-  name: string
+  id: number
+  type: string
   content: string
-  created_at: string
-  likes_count: number
-  liked_by_user: boolean
+  user: {
+    username: string
+    iconImage: string
+  }
+  postedAt: string
+  likeCount: number
+  isLiked: boolean
+}
+
+interface CreatePostRequest {
+  content: string
+}
+
+interface UpdateProfileRequest {
+  profile: string
+}
+
+interface UpdateIconRequest {
+  iconImage: string
 }
 
 class ApiService {
-  private async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${API_URL}${endpoint}`
+  private baseURL: string
+
+  constructor() {
+    this.baseURL = API_URL
+  }
+
+  private async request(endpoint: string, options: RequestInit = {}, token?: string): Promise<any> {
+    const url = `${this.baseURL}${endpoint}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> || {}),
+    }
+
+    if (token) {
+      headers.authorization = token
+    }
+
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
       ...options,
+      headers,
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'An error occurred' }))
-      throw new Error(error.detail || 'An error occurred')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
     }
 
     return response.json()
   }
 
-  private getAuthHeaders(token: string) {
-    return {
-      Authorization: `Bearer ${token}`,
-    }
-  }
-
-  async login(username: string, password: string): Promise<LoginResponse> {
-    return this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    })
-  }
-
-  async register(username: string, email: string, password: string, name: string): Promise<LoginResponse> {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ username, email, password, name }),
-    })
+  async login(username: string): Promise<{ access_token: string }> {
+    return { access_token: `mock-token-${username}-${Date.now()}` }
   }
 
   async getCurrentUser(token: string): Promise<User> {
-    return this.request('/users/me', {
-      headers: this.getAuthHeaders(token),
-    })
+    const username = token.split('-')[2] || 'user'
+    return {
+      username,
+      profile: '',
+      iconImage: ''
+    }
   }
 
-  async updateProfile(token: string, name: string, bio: string): Promise<User> {
-    return this.request('/users/me', {
+  async getPosts(token: string): Promise<Post[]> {
+    return this.request('/api/posts', { method: 'GET' }, token)
+  }
+
+  async getUserPosts(token: string, username: string): Promise<Post[]> {
+    return this.request(`/api/posts/${username}`, { method: 'GET' }, token)
+  }
+
+  async createPost(token: string, data: CreatePostRequest): Promise<Post> {
+    return this.request('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, token)
+  }
+
+  async updatePost(token: string, postId: number, content: string): Promise<Post> {
+    return this.request(`/api/posts/${postId}`, {
       method: 'PUT',
-      headers: this.getAuthHeaders(token),
-      body: JSON.stringify({ name, bio }),
-    })
-  }
-
-  async getUserByUsername(token: string, username: string): Promise<User> {
-    return this.request(`/users/${username}`, {
-      headers: this.getAuthHeaders(token),
-    })
-  }
-
-  async createPost(token: string, content: string): Promise<Post> {
-    return this.request('/posts', {
-      method: 'POST',
-      headers: this.getAuthHeaders(token),
       body: JSON.stringify({ content }),
-    })
+    }, token)
   }
 
-  async getTimeline(token: string): Promise<Post[]> {
-    return this.request('/posts/timeline', {
-      headers: this.getAuthHeaders(token),
-    })
+  async deletePost(token: string, postId: number): Promise<void> {
+    await this.request(`/api/posts/${postId}`, { method: 'DELETE' }, token)
   }
 
-  async getPost(token: string, postId: string): Promise<Post> {
-    return this.request(`/posts/${postId}`, {
-      headers: this.getAuthHeaders(token),
-    })
-  }
-
-  async deletePost(token: string, postId: string): Promise<void> {
-    return this.request(`/posts/${postId}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(token),
-    })
-  }
-
-  async followUser(token: string, username: string): Promise<void> {
-    return this.request(`/users/${username}/follow`, {
+  async likePost(token: string, postId: number): Promise<{ likeCount: number; isLiked: boolean }> {
+    return this.request('/api/likes', {
       method: 'POST',
-      headers: this.getAuthHeaders(token),
-    })
+      body: JSON.stringify({ postid: postId }),
+    }, token)
   }
 
-  async unfollowUser(token: string, username: string): Promise<void> {
-    return this.request(`/users/${username}/follow`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(token),
-    })
+  async unlikePost(token: string, postId: number): Promise<{ likeCount: number; isLiked: boolean }> {
+    return this.request(`/api/likes/${postId}`, { method: 'DELETE' }, token)
   }
 
-  async isFollowing(token: string, username: string): Promise<boolean> {
-    return this.request(`/users/${username}/following`, {
-      headers: this.getAuthHeaders(token),
-    })
+  async getUserProfile(token: string, username: string): Promise<{ profile: string }> {
+    return this.request(`/api/profiles/${username}`, { method: 'GET' }, token)
   }
 
-  async likePost(token: string, postId: string): Promise<void> {
-    return this.request(`/posts/${postId}/like`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(token),
-    })
+  async updateProfile(token: string, data: UpdateProfileRequest): Promise<{ profile: string }> {
+    return this.request('/api/profiles', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, token)
   }
 
-  async unlikePost(token: string, postId: string): Promise<void> {
-    return this.request(`/posts/${postId}/like`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(token),
-    })
+  async getUserIcon(token: string, username: string): Promise<{ iconImage: string }> {
+    return this.request(`/api/icons/${username}`, { method: 'GET' }, token)
   }
 
-  async searchUsers(token: string, query: string): Promise<User[]> {
-    return this.request(`/search/users?q=${encodeURIComponent(query)}`, {
-      headers: this.getAuthHeaders(token),
-    })
-  }
-
-  async searchPosts(token: string, query: string): Promise<Post[]> {
-    return this.request(`/search/posts?q=${encodeURIComponent(query)}`, {
-      headers: this.getAuthHeaders(token),
-    })
+  async updateIcon(token: string, data: UpdateIconRequest): Promise<{ iconImage: string }> {
+    return this.request('/api/icons', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, token)
   }
 }
 
