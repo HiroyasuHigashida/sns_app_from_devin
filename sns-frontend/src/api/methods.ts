@@ -14,7 +14,7 @@ instance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => 
   if (!idToken) {
     throw new Error("idToken is empty");
   }
-  config.headers.Authorization = `Bearer ${idToken}`;
+  config.headers.Authorization = `${idToken}`;
   return config;
 });
 

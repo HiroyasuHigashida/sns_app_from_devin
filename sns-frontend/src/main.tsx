@@ -10,9 +10,9 @@ import App from "./App.tsx";
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: "ap-northeast-1_oyaGkCYkK", // CDK実行結果のBaseInfraStack.cognitoUserPoolId
-      userPoolClientId: "nfisnunv3a8kvuqob66e9jrsb", // CDK実行結果のBaseInfraStack.cognitoUserPoolClientId
-      identityPoolId: "ap-northeast-1:51ca0e63-a89c-4f3a-9fad-cb90809e24d7", // CDK実行結果のBaseInfraStack.cognitoIdentityPoolId
+      userPoolId: "ap-northeast-1_jDy6IO2m7", // CDK実行結果のBaseInfraStack.cognitoUserPoolId
+      userPoolClientId: "3lns0hu13e34n00pdj2jotml9n", // CDK実行結果のBaseInfraStack.cognitoUserPoolClientId
+      identityPoolId: "ap-northeast-1:cbf6a159-d75e-4011-b3de-6de690266a53", // CDK実行結果のBaseInfraStack.cognitoIdentityPoolId
       loginWith: {
         email: true,
       },
