@@ -2,22 +2,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { api } from '../services/api'
 
 interface User {
-  id: string
   username: string
-  email: string
-  name: string
-  bio: string
-  created_at: string
-  followers_count: number
-  following_count: number
+  profile?: string
+  iconImage?: string
 }
 
 interface AuthContextType {
   token: string | null
   user: User | null
   loading: boolean
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, email: string, password: string, name: string) => Promise<void>
+  login: (username: string) => Promise<void>
   logout: () => void
   updateUser: (user: User) => void
 }
@@ -64,16 +58,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  const login = async (username: string, password: string) => {
-    const response = await api.login(username, password)
-    const newToken = response.access_token
-    setToken(newToken)
-    localStorage.setItem('token', newToken)
-    await fetchCurrentUser(newToken)
-  }
-
-  const register = async (username: string, email: string, password: string, name: string) => {
-    const response = await api.register(username, email, password, name)
+  const login = async (username: string) => {
+    const response = await api.login(username)
     const newToken = response.access_token
     setToken(newToken)
     localStorage.setItem('token', newToken)
@@ -95,7 +81,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     loading,
     login,
-    register,
     logout,
     updateUser
   }
