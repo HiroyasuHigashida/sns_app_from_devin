@@ -33,8 +33,8 @@ export const validate = <T>(schema: AnySchema, data: Partial<T>): ValidateResult
 
   return {
     isValid: false,
-    message: JsonSchema.errorsText(validate.errors, { separator: '\n' }),
-    errors: validate.errors,
+    message: validate.errors?.map(err => err.message).join('\n') || 'Validation failed',
+    errors: validate.errors || [],
     values: null,
   };
 };
