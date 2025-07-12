@@ -7,6 +7,8 @@ import React from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import HomeIcon from "@mui/icons-material/Home";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import PersonIcon from "@mui/icons-material/Person";
 import { NavLink } from "@/components/NavLink";
 import { UserProfileMenu } from "@/modules/UserProfile";
 import { paperStyles, logoStyles, navListStyles } from "./styles";
@@ -67,6 +69,13 @@ export const SideNav: React.FC<SideNavProps> = ({
           label="ホーム"
           isActive={activePage === "home"}
           onClick={() => handleNavigate("home")}
+        />
+        <NavLink
+          icon={<PersonOutlinedIcon fontSize="large" />}
+          activeIcon={<PersonIcon fontSize="large" />}
+          label="プロフィール"
+          isActive={activePage === "profile"}
+          onClick={() => handleNavigate("profile")}
         />
       </Box>
 
