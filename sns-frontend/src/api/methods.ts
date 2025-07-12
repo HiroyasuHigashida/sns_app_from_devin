@@ -30,7 +30,7 @@ export const get = async (path: string) => {
     return response.data;
   } catch (error) {
     console.error(error);
-    return null; // エラーが発生した場合はnullを返す
+    throw error; // エラーをスローしてTanStack Queryに処理させる
   }
 };
 
@@ -46,7 +46,7 @@ export const post = async (path: string, data: unknown) => {
     return response.data;
   } catch (error) {
     console.error(error);
-    return null; // エラーが発生した場合はnullを返す
+    throw error; // エラーをスローしてTanStack Queryに処理させる
   }
 };
 
@@ -62,7 +62,7 @@ export const put = async (path: string, data: unknown) => {
     return response.data;
   } catch (error) {
     console.error(error);
-    return null; // エラーが発生した場合はnullを返す
+    throw error; // エラーをスローしてTanStack Queryに処理させる
   }
 };
 
@@ -78,6 +78,6 @@ export const deleteRequest = async (path: string) => {
     return response.data;
   } catch (error) {
     console.error(error);
-    return null; // エラーが発生した場合はnullを返す
+    throw error; // エラーをスローしてTanStack Queryに処理させる
   }
 };

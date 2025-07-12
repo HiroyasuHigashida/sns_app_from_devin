@@ -3,20 +3,22 @@ import { post, deleteRequest } from "@/api/methods";
 
 
 
-export const useLike = (refetch: () => void) => {
+export const useLike = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: (postId: number) => post("/api/likes", { postid: postId }),
     onSuccess: () => {
-      refetch();
+      if (onSuccess) onSuccess();
     },
+    retry: 0,
   });
 };
 
-export const useUnlike = (refetch: () => void) => {
+export const useUnlike = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: (postId: number) => deleteRequest(`/api/likes/${postId}`),
     onSuccess: () => {
-      refetch();
+      if (onSuccess) onSuccess();
     },
+    retry: 0,
   });
 };
