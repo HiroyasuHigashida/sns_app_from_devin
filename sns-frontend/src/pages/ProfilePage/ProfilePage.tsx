@@ -1,8 +1,10 @@
 import React from "react";
-import { useParams } from '@tanstack/react-router';
 import { Profile } from "@/modules/Profile";
 
-export const ProfilePage: React.FC = () => {
-  const { username } = useParams({ from: '/profile/$username' });
+interface ProfilePageProps {
+  username?: string;
+}
+
+export const ProfilePage: React.FC<ProfilePageProps> = ({ username }) => {
   return <Profile username={username} />;
 };
