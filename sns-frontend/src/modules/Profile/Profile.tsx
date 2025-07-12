@@ -17,7 +17,6 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { useGetProfile, useUpdateProfile, useGetIcon, useUpdateIcon } from "@/modules/UserProfile/api/useProfile";
 import { useGetOwnerPosts } from "@/modules/Feed/api/useGetOwnerPosts";
 import { PostCard } from "@/modules/PostCard";
-// import { profileContainerStyles, profileHeaderStyles, profileInfoStyles, avatarStyles, profileTextStyles, postsContainerStyles, editButtonStyles, saveButtonStyles, cancelButtonStyles } from "./styles";
 
 interface ProfileProps {
   username?: string;
