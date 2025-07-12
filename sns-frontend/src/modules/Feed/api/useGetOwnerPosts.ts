@@ -53,5 +53,6 @@ export const useGetOwnerPosts = (owner: string, offset?: number, limit?: number)
 
       return posts;
     },
+    retry: 0,
   });
 };

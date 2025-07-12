@@ -80,5 +80,6 @@ export const useGetPost = (offset?: number, limit?: number) => {
 
       return posts;
     },
+    retry: 0,
   });
 };
