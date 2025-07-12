@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SideNav } from '../SideNav';
+import { SideNav } from '@/modules/SideNav';
 
 // UserProfileMenuコンポーネントのモック
-vi.mock('../../UserProfile', () => ({
+vi.mock('@/modules/UserProfile', () => ({
   UserProfileMenu: () => <div data-testid="user-profile-menu">User Profile Menu</div>,
 }));
 
@@ -40,4 +40,4 @@ describe('サイドナビゲーション', () => {
     render(<SideNav activePage="home" />);
     expect(screen.getByText('ホーム')).toBeInTheDocument();
   });
-}); 
+});    

@@ -25,7 +25,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Avatar } from "@/components/Avatar";
-import { useCurrentUser } from "../../contexts/CurrentUserContext";
+import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import {
   cardStyles,
   cardContentStyles,

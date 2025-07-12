@@ -11,6 +11,7 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import { NavLink } from "@/components/NavLink";
 import { UserProfileMenu } from "@/modules/UserProfile";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import { paperStyles, logoStyles, navListStyles } from "./styles";
 
 /**
@@ -28,7 +29,7 @@ export interface SideNavProps {
     | "messages"
     | "bookmarks"
     | "profile";
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, username?: string) => void;
 }
 
 /**
@@ -42,6 +43,12 @@ export const SideNav: React.FC<SideNavProps> = ({
   activePage = "home",
   onNavigate,
 }) => {
+  const { user } = useAuthenticator((context) => [context.user]);
+  const username = user?.username;
+  
+  console.log('SideNav user object:', user);
+  console.log('SideNav username:', username);
+  
   /**
    * ナビゲーションリンククリック時のハンドラ
    * onNavigateプロパティが提供されている場合にそれを呼び出します
@@ -49,8 +56,13 @@ export const SideNav: React.FC<SideNavProps> = ({
    * @param {string} page - 遷移先のページ名
    */
   const handleNavigate = (page: string) => {
+    console.log('SideNav handleNavigate called with:', page, 'username:', username);
     if (onNavigate) {
-      onNavigate(page);
+      if (page === "profile") {
+        onNavigate(page, username || "");
+      } else {
+        onNavigate(page);
+      }
     }
   };
 

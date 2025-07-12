@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 import { CurrentUserProvider } from "./contexts/CurrentUserContext";
 import { Layout } from "./components/Layout";
 import { TimelinePage } from "./pages/TimelinePage";
@@ -18,9 +18,11 @@ function App() {
     if (page === "home") {
       setActivePage("home");
       setProfileUsername(undefined);
+      window.history.pushState({}, "", "/");
     } else if (page === "profile") {
       setActivePage("profile");
       setProfileUsername(username);
+      window.history.pushState({}, "", `/profile/${username}`);
     }
   };
 

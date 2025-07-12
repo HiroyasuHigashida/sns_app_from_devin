@@ -1,6 +1,23 @@
-// グローバルスタイル
 export const globalStyles = {
-  // index.cssから移動したスタイル
+  "html, body, #root": {
+    height: "100%",
+    margin: 0,
+    padding: 0,
+    overflow: "hidden",
+  },
+
+  "*": {
+    outline: "none !important",
+  },
+  "*:focus, *:focus-visible, *:active": {
+    outline: "none !important",
+    boxShadow: "none !important",
+  },
+  'button:focus, [role="button"]:focus, a:focus, .MuiButtonBase-root:focus': {
+    outline: "none !important",
+    boxShadow: "none !important",
+  },
+
   ":root": {
     fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
     lineHeight: 1.5,
@@ -14,21 +31,6 @@ export const globalStyles = {
     MozOsxFontSmoothing: "grayscale",
   },
 
-  // アウトラインとフォーカス表示を完全に削除
-  "*": {
-    outline: "none !important",
-  },
-
-  "*:focus": {
-    outline: "none !important",
-    boxShadow: "none !important",
-  },
-
-  "*:focus-visible": {
-    outline: "none !important",
-    boxShadow: "none !important",
-  },
-
   a: {
     fontWeight: 500,
     color: "#646cff",
@@ -39,11 +41,10 @@ export const globalStyles = {
   },
 
   body: {
-    margin: 0,
-    padding: 0,
     display: "block",
     minWidth: "320px",
     minHeight: "100vh",
+    textAlign: "left",
   },
 
   h1: {
@@ -65,10 +66,6 @@ export const globalStyles = {
   "button:hover": {
     borderColor: "#646cff",
   },
-  "button:focus, button:focus-visible": {
-    outline: "none !important",
-    boxShadow: "none !important",
-  },
 
   "@media (prefers-color-scheme: light)": {
     ":root": {
@@ -83,16 +80,6 @@ export const globalStyles = {
     },
   },
 
-  // App.cssから移動したスタイル
-  "#root": {
-    width: "100%",
-    height: "100%",
-    margin: 0,
-    padding: 0,
-    textAlign: "left",
-  },
-
-  // 不要なスタイルを削除または無効化
   ".logo, .card, .read-the-docs": {
     display: "none",
   },

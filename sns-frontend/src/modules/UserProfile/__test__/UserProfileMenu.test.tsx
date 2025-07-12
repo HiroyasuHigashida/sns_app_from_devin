@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UserProfileMenu } from '../UserProfileMenu';
+import { UserProfileMenu } from '@/modules/UserProfile';
 
 // AWS Amplify認証のモック
 const mockSignOut = vi.fn();
@@ -52,4 +52,4 @@ describe('ユーザープロファイルメニュー', () => {
 });
 
 // TypeScriptを満たすための認証フックのインポート
-// import { useAuthenticator } from '@aws-amplify/ui-react'; 
+// import { useAuthenticator } from '@aws-amplify/ui-react';  

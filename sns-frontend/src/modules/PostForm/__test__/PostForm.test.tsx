@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { PostForm } from '../PostForm';
+import { PostForm } from '@/modules/PostForm';
 
 describe('ポストフォーム', () => {
   const mockSubmit = vi.fn();
@@ -74,4 +74,4 @@ describe('ポストフォーム', () => {
     fireEvent.change(input, { target: { value: 'Too long text' } });
     expect(submitButton).toBeDisabled();
   });
-}); 
+});  

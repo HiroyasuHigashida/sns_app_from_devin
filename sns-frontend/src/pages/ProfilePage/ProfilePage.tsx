@@ -1,5 +1,5 @@
 import React from "react";
-import { Profile } from "../../modules/Profile";
+import { Profile } from "@/modules/Profile";
 
 interface ProfilePageProps {
   username?: string;

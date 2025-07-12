@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Feed } from '../Feed';
+import { Feed } from '@/modules/Feed';
 
 // APIフックのモック
 vi.mock('../api/usePost', () => ({
@@ -73,4 +73,4 @@ describe('フィード', () => {
 });
 
 // TypeScriptを満たすためにAPIフックをインポート
-import { useGetPost } from '../api/useGetPost';    
+import { useGetPost } from '@/modules/Feed/api/useGetPost';            

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { NavLink } from '../NavLink';
+import { NavLink } from '@/components/NavLink';
 
 describe('ナビゲーションリンク', () => {
   it('ラベルとアイコンでレンダリングされる', () => {
@@ -48,4 +48,4 @@ describe('ナビゲーションリンク', () => {
     expect(screen.getByTestId('icon')).toBeInTheDocument();
     expect(screen.queryByTestId('active-icon')).not.toBeInTheDocument();
   });
-}); 
+});  

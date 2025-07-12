@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Button } from '../Button';
+import { Button } from '@/components/Button';
 
 describe('ボタン', () => {
   it('デフォルトのpropsでレンダリングされる', () => {
@@ -32,4 +32,4 @@ describe('ボタン', () => {
     const button = screen.getByRole('button', { name: /full width button/i });
     expect(button).toHaveClass('MuiButton-fullWidth');
   });
-}); 
+});  
