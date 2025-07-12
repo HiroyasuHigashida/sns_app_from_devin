@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { PostCard } from '../PostCard';
+import { PostCard } from '@/modules/PostCard';
 
 describe('ポストカード', () => {
   const mockProps = {
@@ -68,4 +68,4 @@ describe('ポストカード', () => {
     fireEvent.click(screen.getByLabelText('share'));
     expect(mockProps.onShare).toHaveBeenCalledTimes(1);
   });
-});  
+});    

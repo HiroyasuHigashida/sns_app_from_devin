@@ -23,14 +23,12 @@ export default defineConfig({
             provider: "istanbul",
             reporter: ["text", "lcov"],
             include: ["src/**/*.tsx", "src/**/*.ts"],
-            // Pages配下は現状空なので一旦除外 todo:Pages配下を単体でもテストするか、E2Eテストでカバーするかを検討
             exclude: [
                 "src/App.tsx",
                 "src/main.tsx",
                 "src/api/methods.ts",
                 "src/mock/*",
                 "src/**/api/*",
-                "src/Pages/**",
                 "**/*.stories.tsx",
                 "**/__test__/**",
             ],

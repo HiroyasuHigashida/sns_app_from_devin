@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { get } from "../../../api/methods";
+import { get } from "@/api/methods";
 
 interface PostResponse {
   id: number;

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { HomePage } from '../HomePage';
+import { HomePage } from '@/pages/HomePage';
 
 // テストを簡略化するためのすべての子コンポーネントのモック
 vi.mock('../../../modules/SideNav', () => ({
@@ -43,4 +43,4 @@ describe('ホームページ', () => {
     expect(screen.queryByTestId('side-nav')).not.toBeInTheDocument();
     expect(screen.getByTestId('feed')).toBeInTheDocument();
   });
-}); 
+});  

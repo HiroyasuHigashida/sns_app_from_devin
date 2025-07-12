@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Avatar } from '../Avatar';
+import { Avatar } from '@/components/Avatar';
 
 describe('アバター', () => {
   it('alt テキストでレンダリングされる', () => {
@@ -35,4 +35,4 @@ describe('アバター', () => {
     const avatar = screen.getByLabelText('User avatar');
     expect(avatar).toBeInTheDocument();
   });
-}); 
+});  

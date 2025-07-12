@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { put, deleteRequest } from "../../../api/methods";
+import { put, deleteRequest } from "@/api/methods";
 
 
 

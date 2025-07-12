@@ -1,22 +1,5 @@
 import { SxProps, Theme } from "@mui/material";
 
-export const globalStyles = {
-  "html, body, #root": {
-    height: "100%",
-    margin: 0,
-    padding: 0,
-    overflow: "hidden",
-  },
-  "*:focus, *:focus-visible, *:active": {
-    outline: "none !important",
-    boxShadow: "none !important",
-  },
-  'button:focus, [role="button"]:focus, a:focus, .MuiButtonBase-root:focus': {
-    outline: "none !important",
-    boxShadow: "none !important",
-  },
-};
-
 export const layoutStyles: SxProps<Theme> = {
   display: "flex",
   flexDirection: "row",

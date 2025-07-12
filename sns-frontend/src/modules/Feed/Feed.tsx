@@ -12,7 +12,7 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { useGetPost } from "./api/useGetPost";
 import { useLike, useUnlike } from "./api/useLike";
 import { useUpdatePost, useDeletePost } from "./api/usePostActions";
-import { PostEditDialog } from "../PostEditDialog";
+import { PostEditDialog } from "@/modules/PostEditDialog";
 import {
   paperStyles,
   emptyStateStyles,

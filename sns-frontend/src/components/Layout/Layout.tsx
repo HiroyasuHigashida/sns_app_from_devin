@@ -6,13 +6,13 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { SideNav } from "../../modules/SideNav";
+import { SideNav } from "@/modules/SideNav";
 import {
-  globalStyles,
   layoutStyles,
   sideNavStyles,
   feedStyles,
 } from "./styles";
+import { globalStyles } from "@/styles/global";
 
 interface LayoutProps {
   children: React.ReactNode;
