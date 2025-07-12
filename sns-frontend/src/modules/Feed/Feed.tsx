@@ -3,7 +3,7 @@
  * ホームページのメインコンテンツとして、投稿フォームと投稿一覧を表示します。
  * 投稿の取得・投稿機能をAPI連携して実装しています。
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Paper, Button } from "@mui/material";
 import { PostForm } from "@/modules/PostForm";
 import { PostCard } from "@/modules/PostCard";
@@ -59,20 +59,37 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
   const [editingPost, setEditingPost] = useState<{id: number, content: string} | null>(null);
   const [offset, setOffset] = useState(0);
   const [limit] = useState(20);
+  const [allPosts, setAllPosts] = useState<any[]>(initialPosts);
 
   // 投稿一覧を取得するカスタムフック
   const {
-    data: posts = initialPosts,
+    data: newPosts = [],
     refetch: postRefetch,
   } = useGetPost(offset, limit);
 
+  useEffect(() => {
+    if (newPosts && newPosts.length > 0) {
+      if (offset === 0) {
+        setAllPosts(newPosts);
+      } else {
+        setAllPosts(prev => [...prev, ...newPosts]);
+      }
+    }
+  }, [newPosts, offset]);
+
   // 投稿を作成するカスタムフック（投稿後にフィードを再取得）
-  const { mutate: post } = usePost(() => postRefetch());
+  const { mutate: post } = usePost(() => {
+    setOffset(0);
+    postRefetch();
+  });
 
   const { mutate: likePost } = useLike(() => postRefetch());
   const { mutate: unlikePost } = useUnlike(() => postRefetch());
   const { mutate: updatePost, isPending: updateLoading } = useUpdatePost(() => postRefetch());
-  const { mutate: deletePost } = useDeletePost(() => postRefetch());
+  const { mutate: deletePost } = useDeletePost(() => {
+    setOffset(0);
+    postRefetch();
+  });
 
   /**
    * 投稿フォームからの送信時に呼ばれるハンドラ
@@ -126,9 +143,9 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
       <PostForm userAvatar={userAvatar} onSubmit={handlePostSubmit} />
 
       <Box>
-        {posts.length > 0 ? (
+        {allPosts.length > 0 ? (
           // 投稿がある場合は投稿一覧を表示
-          posts.map((post) => (
+          allPosts.map((post) => (
             <PostCard
               key={post.id}
               id={post.id}
@@ -158,7 +175,7 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
             </Typography>
           </Box>
         )}
-        {posts.length > 0 && (
+        {allPosts.length > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button onClick={handleLoadMore} variant="outlined">
               さらに読み込む
