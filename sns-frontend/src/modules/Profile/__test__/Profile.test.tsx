@@ -13,10 +13,21 @@ vi.mock('../../Feed/api/useGetOwnerPosts', () => ({
   useGetOwnerPosts: vi.fn(),
 }));
 
+vi.mock('../../Feed/api/useLike', () => ({
+  useLike: vi.fn(),
+  useUnlike: vi.fn(),
+}));
+
 vi.mock('../../PostCard', () => ({
-  PostCard: ({ username, content }: { username: string; content: string }) => (
-    <div data-testid="post-card">
-      Post by {username}: {content}
+  PostCard: ({ username, content, onLike, id, isLiked }: { 
+    username: string; 
+    content: string; 
+    onLike?: () => void;
+    id: number;
+    isLiked: boolean;
+  }) => (
+    <div data-testid="post-card" onClick={onLike}>
+      Post by {username}: {content} (ID: {id}, Liked: {isLiked ? 'Yes' : 'No'})
     </div>
   ),
 }));
@@ -27,6 +38,7 @@ vi.mock('@aws-amplify/ui-react', () => ({
 
 import { useGetProfile, useUpdateProfile, useGetIcon, useUpdateIcon } from '../../UserProfile/api/useProfile';
 import { useGetOwnerPosts } from '../../Feed/api/useGetOwnerPosts';
+import { useLike, useUnlike } from '../../Feed/api/useLike';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 describe('プロフィール', () => {
@@ -67,6 +79,8 @@ describe('プロフィール', () => {
 
   const mockRefetch = vi.fn();
   const mockMutate = vi.fn();
+  const mockLikePost = vi.fn();
+  const mockUnlikePost = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -104,6 +118,20 @@ describe('プロフィール', () => {
     
     vi.mocked(useUpdateIcon).mockReturnValue({
       mutate: mockMutate,
+      isPending: false,
+      isError: false,
+      error: null,
+    } as any);
+    
+    vi.mocked(useLike).mockReturnValue({
+      mutate: mockLikePost,
+      isPending: false,
+      isError: false,
+      error: null,
+    } as any);
+    
+    vi.mocked(useUnlike).mockReturnValue({
+      mutate: mockUnlikePost,
       isPending: false,
       isError: false,
       error: null,
@@ -199,8 +227,8 @@ describe('プロフィール', () => {
   it('投稿が正しく表示される', () => {
     render(<Profile />);
     
-    expect(screen.getByText('Post by testuser: テスト投稿1')).toBeInTheDocument();
-    expect(screen.getByText('Post by testuser: テスト投稿2')).toBeInTheDocument();
+    expect(screen.getByText('Post by testuser: テスト投稿1 (ID: 1, Liked: No)')).toBeInTheDocument();
+    expect(screen.getByText('Post by testuser: テスト投稿2 (ID: 2, Liked: Yes)')).toBeInTheDocument();
   });
 
   it('投稿がない場合にメッセージを表示する', () => {
@@ -566,5 +594,112 @@ describe('プロフィール', () => {
     expect(screen.getByText('保存')).toBeInTheDocument();
     expect(screen.getByText('キャンセル')).toBeInTheDocument();
     expect(screen.queryByText('プロフィールを編集')).not.toBeInTheDocument();
+  });
+
+  it('いいねボタンをクリックするとlikePostが呼び出される', () => {
+    const mockRefetchPosts = vi.fn();
+    let likeCallback: (() => void) | undefined;
+    
+    vi.mocked(useGetOwnerPosts).mockReturnValue({
+      data: mockPosts,
+      refetch: mockRefetchPosts,
+      isLoading: false,
+      error: null,
+    } as any);
+    
+    vi.mocked(useLike).mockImplementation((callback) => {
+      likeCallback = callback;
+      return {
+        mutate: mockLikePost,
+        isPending: false,
+        isError: false,
+        error: null,
+      } as any;
+    });
+
+    render(<Profile />);
+    
+    const postCards = screen.getAllByTestId('post-card');
+    expect(postCards).toHaveLength(2);
+    
+    fireEvent.click(postCards[0]);
+    
+    expect(mockLikePost).toHaveBeenCalledWith(1);
+    
+    if (likeCallback) {
+      likeCallback();
+    }
+    
+    expect(mockRefetchPosts).toHaveBeenCalled();
+  });
+
+  it('いいね済みの投稿でいいねボタンをクリックするとunlikePostが呼び出される', () => {
+    const mockRefetchPosts = vi.fn();
+    let unlikeCallback: (() => void) | undefined;
+    
+    vi.mocked(useGetOwnerPosts).mockReturnValue({
+      data: mockPosts,
+      refetch: mockRefetchPosts,
+      isLoading: false,
+      error: null,
+    } as any);
+    
+    vi.mocked(useUnlike).mockImplementation((callback) => {
+      unlikeCallback = callback;
+      return {
+        mutate: mockUnlikePost,
+        isPending: false,
+        isError: false,
+        error: null,
+      } as any;
+    });
+
+    render(<Profile />);
+    
+    const postCards = screen.getAllByTestId('post-card');
+    expect(postCards).toHaveLength(2);
+    
+    fireEvent.click(postCards[1]);
+    
+    expect(mockUnlikePost).toHaveBeenCalledWith(2);
+    
+    if (unlikeCallback) {
+      unlikeCallback();
+    }
+    
+    expect(mockRefetchPosts).toHaveBeenCalled();
+  });
+
+  it('handleLike関数がisLikedがfalseの場合にlikePostを呼び出す', () => {
+    render(<Profile />);
+    
+    const postCards = screen.getAllByTestId('post-card');
+    fireEvent.click(postCards[0]);
+    
+    expect(mockLikePost).toHaveBeenCalledWith(1);
+    expect(mockUnlikePost).not.toHaveBeenCalled();
+  });
+
+  it('handleLike関数がisLikedがtrueの場合にunlikePostを呼び出す', () => {
+    render(<Profile />);
+    
+    const postCards = screen.getAllByTestId('post-card');
+    fireEvent.click(postCards[1]);
+    
+    expect(mockUnlikePost).toHaveBeenCalledWith(2);
+    expect(mockLikePost).not.toHaveBeenCalled();
+  });
+
+  it('PostCardのonLikeコールバックが正しく設定される', () => {
+    render(<Profile />);
+    
+    const postCards = screen.getAllByTestId('post-card');
+    expect(postCards).toHaveLength(2);
+    
+    fireEvent.click(postCards[0]);
+    expect(mockLikePost).toHaveBeenCalledWith(1);
+    
+    fireEvent.click(postCards[1]);
+    expect(mockUnlikePost).toHaveBeenCalledWith(2);
   });
 });

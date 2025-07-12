@@ -176,4 +176,57 @@ describe('サイドナビゲーション', () => {
     expect(screen.getByText('ホーム')).toBeInTheDocument();
     expect(screen.getByText('プロフィール')).toBeInTheDocument();
   });
-});                          
+
+  it('handleNavigateでプロフィール以外のページの場合はusernameを渡さない', () => {
+    const mockOnNavigate = vi.fn();
+    
+    render(<SideNav activePage="home" onNavigate={mockOnNavigate} />);
+    
+    const homeLink = screen.getByText('ホーム');
+    fireEvent.click(homeLink);
+    
+    expect(mockOnNavigate).toHaveBeenCalledWith('home');
+    expect(mockOnNavigate).not.toHaveBeenCalledWith('home', expect.any(String));
+  });
+
+  it('handleNavigateでプロフィールページの場合はusernameを渡す', () => {
+    const mockOnNavigate = vi.fn();
+    
+    render(<SideNav activePage="profile" onNavigate={mockOnNavigate} />);
+    
+    const profileLink = screen.getByText('プロフィール');
+    fireEvent.click(profileLink);
+    
+    expect(mockOnNavigate).toHaveBeenCalledWith('profile', 'testuser');
+  });
+
+  it('usernameがnullの場合でも空文字を渡す', () => {
+    const mockOnNavigate = vi.fn();
+    
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: { username: null },
+    } as any);
+    
+    render(<SideNav activePage="profile" onNavigate={mockOnNavigate} />);
+    
+    const profileLink = screen.getByText('プロフィール');
+    fireEvent.click(profileLink);
+    
+    expect(mockOnNavigate).toHaveBeenCalledWith('profile', '');
+  });
+
+  it('usernameがundefinedの場合でも空文字を渡す', () => {
+    const mockOnNavigate = vi.fn();
+    
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: { username: undefined },
+    } as any);
+    
+    render(<SideNav activePage="profile" onNavigate={mockOnNavigate} />);
+    
+    const profileLink = screen.getByText('プロフィール');
+    fireEvent.click(profileLink);
+    
+    expect(mockOnNavigate).toHaveBeenCalledWith('profile', '');
+  });
+});                             

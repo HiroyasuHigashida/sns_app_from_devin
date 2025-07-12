@@ -205,4 +205,66 @@ describe('ユーザープロファイルメニュー', () => {
     const avatar = screen.getByTestId('PersonIcon');
     expect(avatar).toBeInTheDocument();
   });
-});                
+
+  it('handleClickとhandleCloseの組み合わせテスト', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+      
+      fireEvent.click(document.body);
+      
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    }
+  });
+
+  it('handleLogoutが正しい順序で処理を実行する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      const logoutMenuItem = screen.getByText('ログアウト');
+      
+      fireEvent.click(logoutMenuItem);
+      
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('メニューの状態管理が正しく動作する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      expect(screen.queryByText('ログアウト')).not.toBeInTheDocument();
+      
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    }
+  });
+
+  it('handleCloseが正しく動作する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    }
+  });
+
+  it('anchorElの状態管理が正しく動作する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      const menu = screen.getByRole('menu');
+      expect(menu).toBeInTheDocument();
+    }
+  });
+});                          

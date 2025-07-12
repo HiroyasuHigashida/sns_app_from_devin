@@ -16,6 +16,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { useGetProfile, useUpdateProfile, useGetIcon, useUpdateIcon } from "@/modules/UserProfile/api/useProfile";
 import { useGetOwnerPosts } from "@/modules/Feed/api/useGetOwnerPosts";
+import { useLike, useUnlike } from "@/modules/Feed/api/useLike";
 import { PostCard } from "@/modules/PostCard";
 
 interface ProfileProps {
@@ -32,7 +33,7 @@ export const Profile: React.FC<ProfileProps> = ({ username: propUsername }) => {
   
   const { data: profileData, refetch: refetchProfile } = useGetProfile(username);
   const { data: iconData, refetch: refetchIcon } = useGetIcon(username);
-  const { data: userPosts } = useGetOwnerPosts(username);
+  const { data: userPosts, refetch: refetchPosts } = useGetOwnerPosts(username);
   
   const updateProfileMutation = useUpdateProfile(() => {
     refetchProfile();
@@ -42,6 +43,9 @@ export const Profile: React.FC<ProfileProps> = ({ username: propUsername }) => {
   const updateIconMutation = useUpdateIcon(() => {
     refetchIcon();
   });
+
+  const { mutate: likePost } = useLike(() => refetchPosts());
+  const { mutate: unlikePost } = useUnlike(() => refetchPosts());
 
   const handleEditClick = () => {
     setEditedProfile(profileData?.profile || "");
@@ -66,6 +70,14 @@ export const Profile: React.FC<ProfileProps> = ({ username: propUsername }) => {
         updateIconMutation.mutate(base64String);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLike = (postId: number, isLiked: boolean) => {
+    if (isLiked) {
+      unlikePost(postId);
+    } else {
+      likePost(postId);
     }
   };
 
@@ -204,6 +216,10 @@ export const Profile: React.FC<ProfileProps> = ({ username: propUsername }) => {
               comments={post.comments}
               retweets={post.retweets}
               isLiked={post.isLiked}
+              onLike={() => handleLike(post.id, post.isLiked)}
+              onComment={() => {}}
+              onRetweet={() => {}}
+              onShare={() => {}}
             />
           ))
         ) : (
