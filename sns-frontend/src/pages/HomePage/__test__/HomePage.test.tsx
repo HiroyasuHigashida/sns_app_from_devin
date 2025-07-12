@@ -1,46 +1,18 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@/test-utils';
 import { HomePage } from '@/pages/HomePage';
 
-// テストを簡略化するためのすべての子コンポーネントのモック
-vi.mock('../../../modules/SideNav', () => ({
-  SideNav: ({ activePage }: { activePage: string }) => (
-    <div data-testid="side-nav">SideNav Component (Active: {activePage})</div>
-  ),
-}));
-
-vi.mock('../../../modules/Feed', () => ({
-  Feed: () => <div data-testid="feed">Feed Component</div>,
-}));
-
-// Material UIのuseMediaQueryフックのモック
-vi.mock('@mui/material', async () => {
-  const actual = await vi.importActual('@mui/material');
-  return {
-    ...actual,
-    useMediaQuery: vi.fn(),
-  };
-});
-
-import { useMediaQuery } from '@mui/material';
-
 describe('ホームページ', () => {
-  it('デスクトップでSideNavとFeedの両方をレンダリングする', () => {
-    // デスクトップレイアウトのモック
-    vi.mocked(useMediaQuery).mockReturnValue(false);
+  it('現在使用されていないため何もレンダリングしない', () => {
+    const { container } = render(<HomePage />);
     
-    render(<HomePage />);
-    expect(screen.getByTestId('side-nav')).toBeInTheDocument();
-    expect(screen.getByText('SideNav Component (Active: home)')).toBeInTheDocument();
-    expect(screen.getByTestId('feed')).toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
   });
 
-  it('モバイルではFeedのみをレンダリングする', () => {
-    // モバイルレイアウトのモック
-    vi.mocked(useMediaQuery).mockReturnValue(true);
-    
+  it('SideNavやFeedコンポーネントはレンダリングされない', () => {
     render(<HomePage />);
+    
     expect(screen.queryByTestId('side-nav')).not.toBeInTheDocument();
-    expect(screen.getByTestId('feed')).toBeInTheDocument();
+    expect(screen.queryByTestId('feed')).not.toBeInTheDocument();
   });
-});  
+});         
