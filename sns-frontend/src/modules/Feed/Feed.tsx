@@ -13,6 +13,7 @@ import { useGetPost } from "./api/useGetPost";
 import { useLike, useUnlike } from "./api/useLike";
 import { useUpdatePost, useDeletePost } from "./api/usePostActions";
 import { PostEditDialog } from "@/modules/PostEditDialog";
+import { PostDeleteDialog } from "@/modules/PostDeleteDialog";
 import {
   paperStyles,
   emptyStateStyles,
@@ -57,6 +58,8 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<{id: number, content: string} | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
   const [offset, setOffset] = useState(0);
   const [limit] = useState(20);
   const [allPosts, setAllPosts] = useState<any[]>(initialPosts);
@@ -128,9 +131,8 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
   };
 
   const handleDelete = (postId: number) => {
-    if (window.confirm('この投稿を削除しますか？')) {
-      deletePost(postId);
-    }
+    setDeletingPostId(postId);
+    setDeleteDialogOpen(true);
   };
 
   const handleLoadMore = () => {
@@ -193,6 +195,22 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
         onSave={handleSaveEdit}
         initialContent={editingPost?.content || ''}
         loading={updateLoading}
+      />
+
+      <PostDeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setDeletingPostId(null);
+        }}
+        onDelete={() => {
+          if (deletingPostId) {
+            deletePost(deletingPostId);
+            setDeleteDialogOpen(false);
+            setDeletingPostId(null);
+          }
+        }}
+        loading={false}
       />
     </Paper>
   );
