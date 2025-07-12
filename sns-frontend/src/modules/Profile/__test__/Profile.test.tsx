@@ -412,4 +412,159 @@ describe('プロフィール', () => {
     expect(screen.getByText('保存')).toBeInTheDocument();
     expect(screen.getByText('キャンセル')).toBeInTheDocument();
   });
+
+  it('handleCancelClickが正しく動作する', () => {
+    const mockProfileData = { profile: 'テストプロフィール' };
+    vi.mocked(useGetProfile).mockReturnValue({
+      data: mockProfileData,
+      refetch: vi.fn(),
+    } as any);
+
+    render(<Profile />);
+    
+    const editButton = screen.getByText('プロフィールを編集');
+    fireEvent.click(editButton);
+    
+    const textarea = screen.getByDisplayValue('テストプロフィール');
+    fireEvent.change(textarea, { target: { value: '変更されたプロフィール' } });
+    
+    const cancelButton = screen.getByText('キャンセル');
+    fireEvent.click(cancelButton);
+    
+    expect(screen.getByText('プロフィールを編集')).toBeInTheDocument();
+    expect(screen.queryByText('保存')).not.toBeInTheDocument();
+    expect(screen.queryByText('キャンセル')).not.toBeInTheDocument();
+  });
+
+  it('handleSaveClickが正しく動作する', () => {
+    const mockUpdateProfile = vi.fn();
+    const mockRefetch = vi.fn();
+    
+    vi.mocked(useGetProfile).mockReturnValue({
+      data: { profile: 'テストプロフィール' },
+      refetch: mockRefetch,
+    } as any);
+    
+    vi.mocked(useUpdateProfile).mockReturnValue({
+      mutate: mockUpdateProfile,
+      isPending: false,
+    } as any);
+
+    render(<Profile />);
+    
+    const editButton = screen.getByText('プロフィールを編集');
+    fireEvent.click(editButton);
+    
+    const textarea = screen.getByDisplayValue('テストプロフィール');
+    fireEvent.change(textarea, { target: { value: '更新されたプロフィール' } });
+    
+    const saveButton = screen.getByText('保存');
+    fireEvent.click(saveButton);
+    
+    expect(mockUpdateProfile).toHaveBeenCalledWith('更新されたプロフィール');
+  });
+
+  it('プロフィール保存後にコールバックが実行される', () => {
+    const mockUpdateProfile = vi.fn();
+    const mockRefetch = vi.fn();
+    let updateCallback: (() => void) | undefined;
+    
+    vi.mocked(useGetProfile).mockReturnValue({
+      data: { profile: 'テストプロフィール' },
+      refetch: mockRefetch,
+    } as any);
+    
+    vi.mocked(useUpdateProfile).mockImplementation((callback) => {
+      updateCallback = callback;
+      return {
+        mutate: mockUpdateProfile,
+        isPending: false,
+      } as any;
+    });
+
+    render(<Profile />);
+    
+    const editButton = screen.getByText('プロフィールを編集');
+    fireEvent.click(editButton);
+    
+    const textarea = screen.getByDisplayValue('テストプロフィール');
+    fireEvent.change(textarea, { target: { value: '更新されたプロフィール' } });
+    
+    const saveButton = screen.getByText('保存');
+    fireEvent.click(saveButton);
+    
+    if (updateCallback) {
+      updateCallback();
+    }
+    
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('アイコンアップロード処理のhandleIconUploadが正しく動作する', () => {
+    const mockUpdateIcon = vi.fn();
+    const mockRefetch = vi.fn();
+    let updateIconCallback: (() => void) | undefined;
+    
+    vi.mocked(useGetIcon).mockReturnValue({
+      data: { iconImage: 'data:image/png;base64,test' },
+      refetch: mockRefetch,
+    } as any);
+    
+    vi.mocked(useUpdateIcon).mockImplementation((callback) => {
+      updateIconCallback = callback;
+      return {
+        mutate: mockUpdateIcon,
+        isPending: false,
+        isError: false,
+        error: null,
+      } as any;
+    });
+    
+    render(<Profile />);
+    
+    const fileInput = document.querySelector('#icon-upload') as HTMLInputElement;
+    
+    const mockFileReader = {
+      readAsDataURL: vi.fn(),
+      onload: null as any,
+      result: 'data:image/jpeg;base64,newImageData',
+    };
+    
+    global.FileReader = vi.fn(() => mockFileReader) as any;
+    
+    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    if (mockFileReader.onload) {
+      mockFileReader.onload({ target: { result: mockFileReader.result } } as any);
+    }
+    
+    expect(mockUpdateIcon).toHaveBeenCalledWith('data:image/jpeg;base64,newImageData');
+    
+    if (updateIconCallback) {
+      updateIconCallback();
+    }
+    
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('編集モード中にisEditingがtrueになる', () => {
+    const mockProfileData = { profile: 'テストプロフィール' };
+    vi.mocked(useGetProfile).mockReturnValue({
+      data: mockProfileData,
+      refetch: vi.fn(),
+    } as any);
+
+    render(<Profile />);
+    
+    expect(screen.getByText('プロフィールを編集')).toBeInTheDocument();
+    
+    const editButton = screen.getByText('プロフィールを編集');
+    fireEvent.click(editButton);
+    
+    expect(screen.getByText('保存')).toBeInTheDocument();
+    expect(screen.getByText('キャンセル')).toBeInTheDocument();
+    expect(screen.queryByText('プロフィールを編集')).not.toBeInTheDocument();
+  });
 });

@@ -338,4 +338,39 @@ describe('投稿編集ダイアログ', () => {
     
     expect(vi.mocked(vi.fn())).toHaveBeenCalledTimes(0); // モックが正しく設定されていないため、実際のテストでは別の方法が必要
   });
+
+  it('handleSave関数の条件分岐を完全にテストする', () => {
+    const mockOnSave = vi.fn();
+    
+    render(
+      <PostEditDialog
+        open={true}
+        onClose={vi.fn()}
+        onSave={mockOnSave}
+        initialContent="テスト"
+        loading={false}
+      />
+    );
+    
+    const textField = screen.getByDisplayValue('テスト');
+    const saveButton = screen.getByText('保存');
+    
+    fireEvent.change(textField, { target: { value: '' } });
+    fireEvent.click(saveButton);
+    expect(mockOnSave).not.toHaveBeenCalled();
+    
+    fireEvent.change(textField, { target: { value: '   ' } });
+    fireEvent.click(saveButton);
+    expect(mockOnSave).not.toHaveBeenCalled();
+    
+    const longContent = 'a'.repeat(141);
+    fireEvent.change(textField, { target: { value: longContent } });
+    fireEvent.click(saveButton);
+    expect(mockOnSave).not.toHaveBeenCalled();
+    
+    fireEvent.change(textField, { target: { value: '有効なコンテンツ' } });
+    fireEvent.click(saveButton);
+    expect(mockOnSave).toHaveBeenCalledWith('有効なコンテンツ');
+    expect(mockOnSave).toHaveBeenCalledTimes(1);
+  });
 });

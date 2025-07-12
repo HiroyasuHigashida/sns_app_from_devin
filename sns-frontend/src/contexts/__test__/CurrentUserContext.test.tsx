@@ -274,4 +274,105 @@ describe('CurrentUserContext', () => {
     expect(screen.getByTestId('username')).toHaveTextContent('testuser');
     expect(screen.getByTestId('is-owner-function')).toHaveTextContent('function');
   });
+
+  it('isOwner関数がnullユーザー名で正しく動作する', () => {
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: null,
+    } as any);
+
+    const { result } = renderHook(() => useCurrentUser(), {
+      wrapper: CurrentUserProvider,
+    });
+
+    expect(result.current.isOwner('testuser')).toBe(false);
+    expect(result.current.isOwner('')).toBe(false);
+    expect(result.current.isOwner('null')).toBe(false);
+  });
+
+  it('isOwner関数が空文字列ユーザー名で正しく動作する', () => {
+    const mockUser = {
+      username: '',
+      attributes: { email: 'test@example.com' },
+    };
+
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: mockUser,
+    } as any);
+
+    const { result } = renderHook(() => useCurrentUser(), {
+      wrapper: CurrentUserProvider,
+    });
+
+    expect(result.current.username).toBeNull();
+    expect(result.current.isOwner('')).toBe(false);
+    expect(result.current.isOwner('testuser')).toBe(false);
+  });
+
+  it('useAuthenticatorのコンテキストセレクター関数が正しく呼び出される', () => {
+    const mockUser = {
+      username: 'testuser',
+      attributes: { email: 'test@example.com' },
+    };
+
+    const mockUseAuthenticator = vi.mocked(useAuthenticator);
+    mockUseAuthenticator.mockReturnValue({
+      user: mockUser,
+    } as any);
+
+    renderHook(() => useCurrentUser(), {
+      wrapper: CurrentUserProvider,
+    });
+
+    expect(mockUseAuthenticator).toHaveBeenCalledWith(expect.any(Function));
+    
+    const selectorFunction = mockUseAuthenticator.mock.calls[0]?.[0];
+    if (selectorFunction) {
+      const mockContext = { user: mockUser } as any;
+      const result = selectorFunction(mockContext);
+      expect(result).toEqual([mockUser]);
+    }
+  });
+
+  it('プロバイダーが異なるユーザー状態で正しく再レンダリングされる', () => {
+    const mockUseAuthenticator = vi.mocked(useAuthenticator);
+    
+    mockUseAuthenticator.mockReturnValue({
+      user: { username: 'user1' },
+    } as any);
+
+    const TestComponent = () => {
+      const { username, isOwner } = useCurrentUser();
+      return (
+        <div>
+          <span data-testid="username">{username}</span>
+          <span data-testid="is-owner-user1">{isOwner('user1').toString()}</span>
+          <span data-testid="is-owner-user2">{isOwner('user2').toString()}</span>
+        </div>
+      );
+    };
+
+    const { rerender } = render(
+      <CurrentUserProvider>
+        <TestComponent />
+      </CurrentUserProvider>
+    );
+
+    expect(screen.getByTestId('username')).toHaveTextContent('user1');
+    expect(screen.getByTestId('is-owner-user1')).toHaveTextContent('true');
+    expect(screen.getByTestId('is-owner-user2')).toHaveTextContent('false');
+
+    mockUseAuthenticator.mockReturnValue({
+      user: { username: 'user2' },
+    } as any);
+
+    rerender(
+      <CurrentUserProvider>
+        <TestComponent />
+      </CurrentUserProvider>
+    );
+
+    expect(screen.getByTestId('username')).toHaveTextContent('user2');
+    expect(screen.getByTestId('is-owner-user1')).toHaveTextContent('false');
+    expect(screen.getByTestId('is-owner-user2')).toHaveTextContent('true');
+  });
 });

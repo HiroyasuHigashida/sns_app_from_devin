@@ -140,7 +140,7 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAva
   };
 
   return (
-    <Paper elevation={0} sx={paperStyles}>
+    <Paper elevation={0} sx={paperStyles} data-testid="feed-container">
       {/* 投稿フォーム */}
       <PostForm userAvatar={userAvatar} onSubmit={handlePostSubmit} />
 

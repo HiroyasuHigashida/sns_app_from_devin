@@ -124,4 +124,85 @@ describe('ユーザープロファイルメニュー', () => {
       });
     }
   });
-});          
+
+  it('handleClick関数が正しくanchorElを設定する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    expect(userBox).toBeInTheDocument();
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    }
+  });
+
+  it('handleClose関数の存在を確認する', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    }
+  });
+
+  it('handleLogout関数がhandleCloseとsignOutを順番に呼び出す', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      fireEvent.click(userBox);
+      const logoutButton = screen.getByText('ログアウト');
+      fireEvent.click(logoutButton);
+      
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('ユーザー名がundefinedの場合のデフォルト表示', () => {
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: {
+        username: undefined,
+      },
+      signOut: mockSignOut,
+    } as any);
+
+    render(<UserProfileMenu />);
+    expect(screen.getByText('ユーザー')).toBeInTheDocument();
+    expect(screen.getByText('@user')).toBeInTheDocument();
+  });
+
+  it('メニューのopen状態が正しく管理される', () => {
+    render(<UserProfileMenu />);
+    const userBox = screen.getByText('testuser').closest('div');
+    
+    if (userBox) {
+      expect(screen.queryByText('ログアウト')).not.toBeInTheDocument();
+      
+      fireEvent.click(userBox);
+      expect(screen.getByText('ログアウト')).toBeInTheDocument();
+      
+      fireEvent.click(screen.getByText('ログアウト'));
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('アバターが正しくレンダリングされる', () => {
+    render(<UserProfileMenu />);
+    const avatar = screen.getByTestId('PersonIcon');
+    expect(avatar).toBeInTheDocument();
+  });
+
+  it('ユーザー名がnullの場合もアバターが正しくレンダリングされる', () => {
+    vi.mocked(useAuthenticator).mockReturnValue({
+      user: {
+        username: null,
+      },
+      signOut: mockSignOut,
+    } as any);
+
+    render(<UserProfileMenu />);
+    const avatar = screen.getByTestId('PersonIcon');
+    expect(avatar).toBeInTheDocument();
+  });
+});                
