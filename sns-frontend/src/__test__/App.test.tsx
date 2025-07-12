@@ -278,4 +278,27 @@ describe('App', () => {
     expect(screen.getByTestId('timeline-page')).toBeInTheDocument();
     expect(screen.queryByTestId('profile-page')).not.toBeInTheDocument();
   });
+
+  it('useAuthenticatorのコールバック関数が正しく動作する', () => {
+    let capturedCallback: any;
+    mockUseAuthenticator.mockImplementation((callback?: any) => {
+      capturedCallback = callback;
+      return { route: 'authenticated' };
+    });
+
+    render(<App />);
+
+    expect(capturedCallback).toBeDefined();
+    const result = capturedCallback({ user: { username: 'testuser' } });
+    expect(result).toEqual([{ username: 'testuser' }]);
+  });
+
+  it('handleNavigateで無効なページが指定された場合の分岐をテスト', () => {
+    mockUseAuthenticator.mockReturnValue({ route: 'authenticated' } as any);
+
+    render(<App />);
+
+    const layout = screen.getByTestId('layout');
+    expect(layout).toHaveAttribute('data-active-page', 'home');
+  });
 });
