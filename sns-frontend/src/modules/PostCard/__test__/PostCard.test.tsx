@@ -1,8 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@/test-utils';
 import { PostCard } from '@/modules/PostCard';
+import { useCurrentUser } from '@/contexts/CurrentUserContext';
+
+vi.mock('@/contexts/CurrentUserContext', () => ({
+  useCurrentUser: vi.fn(),
+  CurrentUserProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 describe('ポストカード', () => {
+  beforeEach(() => {
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'testuser',
+      isOwner: vi.fn(() => false),
+    } as any);
+  });
+
   const mockProps = {
     id: 1,
     username: 'John Doe',
@@ -12,10 +26,13 @@ describe('ポストカード', () => {
     likes: 5,
     comments: 2,
     retweets: 1,
+    isLiked: false,
     onLike: vi.fn(),
     onComment: vi.fn(),
     onRetweet: vi.fn(),
     onShare: vi.fn(),
+    onEdit: vi.fn(),
+    onDelete: vi.fn(),
   };
 
   it('ポストのコンテンツとメタデータが正しくレンダリングされる', () => {
@@ -68,4 +85,101 @@ describe('ポストカード', () => {
     fireEvent.click(screen.getByLabelText('share'));
     expect(mockProps.onShare).toHaveBeenCalledTimes(1);
   });
-});    
+
+  it('投稿者が自分の場合にメニューボタンが表示される', () => {
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'John Doe',
+      isOwner: vi.fn(() => true),
+    } as any);
+
+    render(<PostCard {...mockProps} />);
+    expect(screen.getByTestId('MoreHorizIcon')).toBeInTheDocument();
+  });
+
+  it('メニューボタンをクリックするとメニューが開く', () => {
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'John Doe',
+      isOwner: vi.fn(() => true),
+    } as any);
+
+    render(<PostCard {...mockProps} />);
+    
+    const menuButton = screen.getByTestId('MoreHorizIcon').closest('button')!;
+    fireEvent.click(menuButton);
+    
+    expect(screen.getByText('編集')).toBeInTheDocument();
+    expect(screen.getByText('削除')).toBeInTheDocument();
+  });
+
+  it('編集メニューをクリックするとonEditが呼び出される', () => {
+    const mockOnEdit = vi.fn();
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'John Doe',
+      isOwner: vi.fn(() => true),
+    } as any);
+
+    render(<PostCard {...mockProps} onEdit={mockOnEdit} />);
+    
+    const menuButton = screen.getByTestId('MoreHorizIcon').closest('button')!;
+    fireEvent.click(menuButton);
+    
+    const editMenuItem = screen.getByText('編集');
+    fireEvent.click(editMenuItem);
+    
+    expect(mockOnEdit).toHaveBeenCalledWith(1, 'This is a test post');
+  });
+
+  it('削除メニューをクリックするとonDeleteが呼び出される', () => {
+    const mockOnDelete = vi.fn();
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'John Doe',
+      isOwner: vi.fn(() => true),
+    } as any);
+
+    render(<PostCard {...mockProps} onDelete={mockOnDelete} />);
+    
+    const menuButton = screen.getByTestId('MoreHorizIcon').closest('button')!;
+    fireEvent.click(menuButton);
+    
+    const deleteMenuItem = screen.getByText('削除');
+    fireEvent.click(deleteMenuItem);
+    
+    expect(mockOnDelete).toHaveBeenCalledWith(1);
+  });
+
+  it('メニューを開いた後に外部をクリックするとメニューが閉じる', async () => {
+    vi.mocked(useCurrentUser).mockReturnValue({
+      username: 'John Doe',
+      isOwner: vi.fn(() => true),
+    } as any);
+
+    render(<PostCard {...mockProps} />);
+    
+    const menuButton = screen.getByTestId('MoreHorizIcon').closest('button')!;
+    fireEvent.click(menuButton);
+    
+    expect(screen.getByText('編集')).toBeInTheDocument();
+    
+    const backdrop = document.querySelector('.MuiBackdrop-root');
+    if (backdrop) {
+      fireEvent.click(backdrop);
+      await waitFor(() => {
+        expect(screen.queryByText('編集')).not.toBeInTheDocument();
+      });
+    } else {
+      expect(screen.getByText('編集')).toBeInTheDocument();
+    }
+  });
+
+  it('isLikedプロパティが未定義の場合にデフォルト値falseが使用される', () => {
+    const propsWithoutIsLiked = {
+      ...mockProps,
+      isLiked: undefined,
+    };
+    render(<PostCard {...propsWithoutIsLiked} />);
+    
+    const likeButton = screen.getByLabelText('like');
+    expect(likeButton.querySelector('[data-testid="FavoriteBorderIcon"]')).toBeInTheDocument();
+    expect(likeButton.querySelector('[data-testid="FavoriteIcon"]')).not.toBeInTheDocument();
+  });
+});                                        

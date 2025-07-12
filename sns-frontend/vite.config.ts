@@ -27,11 +27,7 @@ export default defineConfig({
       reporter: ["text", "lcov"],
       include: ["src/**/*.tsx", "src/**/*.ts"],
       exclude: [
-        "src/App.tsx",
-        "src/main.tsx",
-        "src/api/methods.ts",
         "src/mock/*",
-        "src/**/api/*",
         "**/*.stories.tsx",
         "**/__test__/**",
       ],

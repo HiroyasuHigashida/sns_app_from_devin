@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@/test-utils';
 import { PostForm } from '@/modules/PostForm';
 
 describe('ポストフォーム', () => {
@@ -74,4 +74,25 @@ describe('ポストフォーム', () => {
     fireEvent.change(input, { target: { value: 'Too long text' } });
     expect(submitButton).toBeDisabled();
   });
-});  
+
+  it('空白のみのテキストで送信しようとしてもonSubmitが呼ばれない', () => {
+    render(<PostForm onSubmit={mockSubmit} />);
+    const input = screen.getByPlaceholderText('今どうしてる？');
+    
+    fireEvent.change(input, { target: { value: '   ' } });
+    fireEvent.submit(input.closest('form')!);
+    
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('maxLengthプロパティが未定義の場合にデフォルト値140が使用される', () => {
+    const propsWithoutMaxLength = {
+      onSubmit: mockSubmit,
+    };
+    render(<PostForm {...propsWithoutMaxLength} />);
+    const input = screen.getByPlaceholderText('今どうしてる？');
+    
+    fireEvent.change(input, { target: { value: 'Test' } });
+    expect(screen.getByText('136')).toBeInTheDocument(); // 140 - 4 = 136 文字残り
+  });
+});     
