@@ -14,11 +14,13 @@ import { getAvatarStyles } from "./styles";
  * @property {string} [src] - アバター画像のURL（省略時はデフォルト表示）
  * @property {string} alt - 画像の代替テキスト（アクセシビリティのため必須）
  * @property {("small" | "medium" | "large")} [size="medium"] - アバターのサイズ
+ * @property {() => void} [onClick] - アバタークリック時のコールバック
  */
 export interface AvatarProps {
   src?: string;
   alt: string;
   size?: "small" | "medium" | "large";
+  onClick?: () => void;
 }
 
 /**
@@ -32,11 +34,16 @@ export const Avatar: React.FC<AvatarProps> = ({
   src,
   alt,
   size = "medium",
+  onClick,
 }) => {
   return <MuiAvatar 
     src={src} 
     alt={alt} 
     aria-label={alt} // アクセシビリティのためのaria-label
-    sx={getAvatarStyles(size)} // サイズに応じたスタイルを適用
+    sx={{ 
+      ...getAvatarStyles(size), // サイズに応じたスタイルを適用
+      cursor: onClick ? 'pointer' : 'default' // クリック可能な場合はポインターカーソル
+    }}
+    onClick={onClick}
   />;
 };

@@ -75,6 +75,7 @@ export interface PostCardProps {
   onShare?: () => void;
   onEdit?: (postId: number, content: string) => void;
   onDelete?: (postId: number) => void;
+  onAvatarClick?: (page: string, username?: string) => void;
 }
 
 /**
@@ -101,6 +102,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onShare,
   onEdit,
   onDelete,
+  onAvatarClick,
 }) => {
   const { isOwner } = useCurrentUser();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -128,7 +130,12 @@ export const PostCard: React.FC<PostCardProps> = ({
       <CardContent sx={cardContentStyles}>
         <Box sx={cardWrapperStyles}>
           {/* 投稿者のアバター */}
-          <Avatar src={avatar} alt={username} size="medium" />
+          <Avatar 
+            src={avatar} 
+            alt={username} 
+            size="medium" 
+            onClick={() => onAvatarClick?.("profile", username)}
+          />
           <Box sx={contentWrapperStyles}>
             {/* 投稿ヘッダー（ユーザー情報、日時） */}
             <Box sx={headerStyles}>
