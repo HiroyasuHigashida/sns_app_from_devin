@@ -6,6 +6,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { SideNav } from "@/modules/SideNav";
 import {
   layoutStyles,
@@ -14,19 +15,21 @@ import {
 } from "./styles";
 import { globalStyles } from "@/styles/global";
 
-interface LayoutProps {
-  children: React.ReactNode;
-  activePage: "home" | "profile";
-  onNavigate: (page: string, username?: string) => void;
-}
-
-export const Layout: React.FC<LayoutProps> = ({
-  children,
-  activePage,
-  onNavigate,
-}) => {
+export const Layout: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const activePage = location.pathname === '/' ? 'home' : 'profile';
+  
+  const handleNavigate = (page: string, username?: string) => {
+    if (page === "home") {
+      navigate({ to: '/' });
+    } else if (page === "profile" && username) {
+      navigate({ to: '/profile/$username', params: { username } });
+    }
+  };
 
   return (
     <>
@@ -35,12 +38,12 @@ export const Layout: React.FC<LayoutProps> = ({
       <Box sx={layoutStyles}>
         {!isMobile && (
           <Box sx={sideNavStyles}>
-            <SideNav activePage={activePage} onNavigate={onNavigate} />
+            <SideNav activePage={activePage} onNavigate={handleNavigate} />
           </Box>
         )}
 
         <Box sx={feedStyles}>
-          {children}
+          <Outlet />
         </Box>
       </Box>
     </>

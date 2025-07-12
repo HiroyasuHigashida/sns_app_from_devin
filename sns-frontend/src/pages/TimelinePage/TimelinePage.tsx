@@ -1,10 +1,15 @@
 import React from "react";
+import { useNavigate } from '@tanstack/react-router';
 import { Feed } from "@/modules/Feed";
 
-interface TimelinePageProps {
-  onAvatarClick?: (page: string, username?: string) => void;
-}
-
-export const TimelinePage: React.FC<TimelinePageProps> = ({ onAvatarClick }) => {
-  return <Feed onAvatarClick={onAvatarClick} />;
+export const TimelinePage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const handleAvatarClick = (page: string, username?: string) => {
+    if (page === "profile" && username) {
+      navigate({ to: '/profile/$username', params: { username } });
+    }
+  };
+  
+  return <Feed onAvatarClick={handleAvatarClick} />;
 };
