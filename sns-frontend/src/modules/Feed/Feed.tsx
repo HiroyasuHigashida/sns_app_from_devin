@@ -25,6 +25,7 @@ import {
  * @interface FeedProps
  * @property {string} [userAvatar] - 投稿フォームに表示するユーザーアバター画像URL
  * @property {Array<PostData>} [initialPosts=[]] - 初期表示する投稿データ配列
+ * @property {(page: string, username?: string) => void} [onAvatarClick] - アバタークリック時のコールバック
  */
 export interface FeedProps {
   userAvatar?: string;
@@ -40,6 +41,7 @@ export interface FeedProps {
     retweets: number;
     isLiked: boolean;
   }>;
+  onAvatarClick?: (page: string, username?: string) => void;
 }
 
 /**
@@ -49,7 +51,7 @@ export interface FeedProps {
  * @param {FeedProps} props - フィードコンポーネントのプロパティ
  * @returns {React.ReactElement} フィードコンポーネント
  */
-export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [] }) => {
+export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [], onAvatarClick }) => {
   // 認証ユーザー情報を取得
   const { user } = useAuthenticator((context) => [context.user]);
 
@@ -145,6 +147,7 @@ export const Feed: React.FC<FeedProps> = ({ userAvatar, initialPosts = [] }) => 
               onShare={() => {}}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onAvatarClick={onAvatarClick}
             />
           ))
         ) : (

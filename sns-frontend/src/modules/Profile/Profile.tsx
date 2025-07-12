@@ -19,12 +19,17 @@ import { useGetOwnerPosts } from "@/modules/Feed/api/useGetOwnerPosts";
 import { PostCard } from "@/modules/PostCard";
 // import { profileContainerStyles, profileHeaderStyles, profileInfoStyles, avatarStyles, profileTextStyles, postsContainerStyles, editButtonStyles, saveButtonStyles, cancelButtonStyles } from "./styles";
 
-export const Profile: React.FC = () => {
+interface ProfileProps {
+  username?: string;
+}
+
+export const Profile: React.FC<ProfileProps> = ({ username: propUsername }) => {
   const { user } = useAuthenticator((context) => [context.user]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState("");
 
-  const username = user?.username || "";
+  const username = propUsername || user?.username || "";
+  const isOwnProfile = !propUsername || propUsername === user?.username;
   
   const { data: profileData, refetch: refetchProfile } = useGetProfile(username);
   const { data: iconData, refetch: refetchIcon } = useGetIcon(username);
@@ -85,32 +90,36 @@ export const Profile: React.FC = () => {
             >
               {!iconData?.iconImage && <PersonIcon fontSize="large" />}
             </Avatar>
-            <input
-              accept="image/*"
-              style={{ display: "none" }}
-              id="icon-upload"
-              type="file"
-              onChange={handleIconUpload}
-            />
-            <label htmlFor="icon-upload">
-              <IconButton
-                component="span"
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  backgroundColor: "primary.main",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                  width: 32,
-                  height: 32,
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </label>
+            {isOwnProfile && (
+              <>
+                <input
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  id="icon-upload"
+                  type="file"
+                  onChange={handleIconUpload}
+                />
+                <label htmlFor="icon-upload">
+                  <IconButton
+                    component="span"
+                    sx={{
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                      backgroundColor: "primary.main",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "primary.dark",
+                      },
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </label>
+              </>
+            )}
           </Box>
           
           <Box sx={{ flex: 1, ml: 3 }}>
@@ -158,14 +167,16 @@ export const Profile: React.FC = () => {
                   <Typography variant="body1" sx={{ mb: 1 }}>
                     {profileData?.profile || "プロフィールが設定されていません"}
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    startIcon={<EditIcon />}
-                    onClick={handleEditClick}
-                    sx={{ mt: 1 }}
-                  >
-                    プロフィールを編集
-                  </Button>
+                  {isOwnProfile && (
+                    <Button
+                      variant="outlined"
+                      startIcon={<EditIcon />}
+                      onClick={handleEditClick}
+                      sx={{ mt: 1 }}
+                    >
+                      プロフィールを編集
+                    </Button>
+                  )}
                 </Box>
               )}
             </Box>
